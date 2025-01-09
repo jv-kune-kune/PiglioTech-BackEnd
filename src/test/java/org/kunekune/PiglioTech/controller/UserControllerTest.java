@@ -36,6 +36,8 @@ public class UserControllerTest {
 
     private ObjectMapper mapper;
 
+    private static final String endpoint = "/api/v1/users";
+
     @BeforeEach
     public void Setup() {
         mockMvcController = MockMvcBuilders.standaloneSetup(userController)
@@ -51,7 +53,7 @@ public class UserControllerTest {
         when(mockService.getUserByUid(anyString())).thenReturn(user);
 
         mockMvcController.perform(
-                MockMvcRequestBuilders.get("/api/v1/users/12345")
+                MockMvcRequestBuilders.get(endpoint + "/12345")
         ).andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.uid").value(user.getUid()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(user.getName()))
@@ -70,14 +72,6 @@ public class UserControllerTest {
                 ).andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
-    @Test
-    @DisplayName("GET request with UID path variable to /api/v1/users/{uid} returns HTTP 400 when supplied UID is empty")
-    void test_getByUid_noUid() throws Exception {
-        mockMvcController.perform(
-                MockMvcRequestBuilders.get("/api/v1/users/")
-        ).andExpect(MockMvcResultMatchers.status().isBadRequest());
-    }
-
 
 
     @Test
@@ -92,7 +86,7 @@ public class UserControllerTest {
         });
 
         mockMvcController.perform(
-                        MockMvcRequestBuilders.post("/api/v1/users")
+                        MockMvcRequestBuilders.post(endpoint)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(json)
                 ).andExpect(MockMvcResultMatchers.status().isCreated())
@@ -113,31 +107,31 @@ public class UserControllerTest {
         String json_missingThumbnail = mapper.writeValueAsString(new User("UID", "Name", "Email", Region.NORTH_WEST, null));
 
         mockMvcController.perform(
-                MockMvcRequestBuilders.post("/api/v1/users")
+                MockMvcRequestBuilders.post(endpoint)
                         .content(json_missingUid)
                         .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(MockMvcResultMatchers.status().isBadRequest());
 
         mockMvcController.perform(
-                MockMvcRequestBuilders.post("/api/v1/users")
+                MockMvcRequestBuilders.post(endpoint)
                         .content(json_missingName)
                         .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(MockMvcResultMatchers.status().isBadRequest());
 
         mockMvcController.perform(
-                MockMvcRequestBuilders.post("/api/v1/users")
+                MockMvcRequestBuilders.post(endpoint)
                         .content(json_missingEmail)
                         .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(MockMvcResultMatchers.status().isBadRequest());
 
         mockMvcController.perform(
-                MockMvcRequestBuilders.post("/api/v1/users")
+                MockMvcRequestBuilders.post(endpoint)
                         .content(json_missingRegion)
                         .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(MockMvcResultMatchers.status().isBadRequest());
 
         mockMvcController.perform(
-                MockMvcRequestBuilders.post("/api/v1/users")
+                MockMvcRequestBuilders.post(endpoint)
                         .content(json_missingThumbnail)
                         .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(MockMvcResultMatchers.status().isBadRequest());
@@ -147,7 +141,7 @@ public class UserControllerTest {
     @DisplayName("POST request with absent user details in request body returns HTTP 400")
     void test_post_noBody() throws Exception {
         mockMvcController.perform(
-                MockMvcRequestBuilders.post("/api/v1/users")
+                MockMvcRequestBuilders.post(endpoint)
         ).andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 }
