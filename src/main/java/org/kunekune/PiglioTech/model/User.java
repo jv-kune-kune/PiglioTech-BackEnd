@@ -31,7 +31,7 @@ public class User {
     public User() {
     }
 
-    public User(String uid, String name, String email, String phoneNumber, Region region, String thumbnail) {
+    public User(String uid, String name, String email, Region region, String thumbnail) {
         this.uid = uid;
         this.name = name;
         this.email = email;
