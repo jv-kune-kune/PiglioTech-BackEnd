@@ -10,6 +10,7 @@ import org.kunekune.PiglioTech.service.UserService;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -17,6 +18,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.NoSuchElementException;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -50,11 +52,11 @@ public class UserControllerTest {
         mockMvcController.perform(
                 MockMvcRequestBuilders.get("/api/v1/users/12345")
         ).andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath(".uid").value(user.getUid()))
-                .andExpect(MockMvcResultMatchers.jsonPath(".name").value(user.getName()))
-                .andExpect(MockMvcResultMatchers.jsonPath(".email").value(user.getEmail()))
-                .andExpect(MockMvcResultMatchers.jsonPath(".region").value(user.getRegion().toString()))
-                .andExpect(MockMvcResultMatchers.jsonPath(".thumbnail").value(user.getThumbnail()));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.uid").value(user.getUid()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(user.getName()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.email").value(user.getEmail()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.region").value(user.getRegion().toString()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.thumbnail").value(user.getThumbnail()));
     }
 
     @Test
