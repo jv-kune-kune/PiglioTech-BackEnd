@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.kunekune.PiglioTech.exception.GlobalExceptionHandler;
 import org.kunekune.PiglioTech.model.Region;
 import org.kunekune.PiglioTech.model.User;
 import org.kunekune.PiglioTech.service.UserService;
@@ -16,7 +17,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -41,6 +41,7 @@ public class UserControllerTest {
     @BeforeEach
     public void Setup() {
         mockMvcController = MockMvcBuilders.standaloneSetup(userController)
+                .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
         mapper = new ObjectMapper();
     }
