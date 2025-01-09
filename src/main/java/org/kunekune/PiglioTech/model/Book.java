@@ -14,7 +14,7 @@ public class Book {
     @Column
     private String author;
     @Column
-    private Integer year;
+    private Integer publishedYear;
     @Column
     private String thumbnail;
     @Column
@@ -29,7 +29,7 @@ public class Book {
     public Book(String isbn, String author, Integer year, String thumbnail, String description) {
         this.isbn = isbn;
         this.author = author;
-        this.year = year;
+        this.publishedYear = year;
         this.thumbnail = thumbnail;
         this.description = description;
         this.users = new ArrayList<>();
@@ -41,8 +41,8 @@ public class Book {
     public String getAuthor() {
         return author;
     }
-    public Integer getYear() {
-        return year;
+    public Integer getPublishedYear() {
+        return publishedYear;
     }
     public String getThumbnail() {
         return thumbnail;
@@ -58,8 +58,8 @@ public class Book {
     public void setAuthor(String author) {
         this.author = author;
     }
-    public void setYear(Integer year) {
-        this.year = year;
+    public void setPublishedYear(Integer publishedYear) {
+        this.publishedYear = publishedYear;
     }
     public void setThumbnail(String thumbnail) {
         this.thumbnail = thumbnail;
