@@ -7,9 +7,11 @@ import org.kunekune.PiglioTech.model.Region;
 import org.kunekune.PiglioTech.model.User;
 import org.kunekune.PiglioTech.repository.BookRepository;
 import org.kunekune.PiglioTech.repository.DummyGoogleBooksDao;
+import org.kunekune.PiglioTech.repository.GoogleBooksDAO;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import reactor.core.publisher.Mono;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -17,7 +19,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @DataJpaTest
 class BookServiceTest {
@@ -26,7 +28,7 @@ class BookServiceTest {
     private BookRepository mockRepository;
 
     @Mock
-    private DummyGoogleBooksDao googleDao;
+    private GoogleBooksDAO googleDao;
 
     @InjectMocks
     private BookService bookService = new BookServiceImpl();
@@ -54,7 +56,7 @@ class BookServiceTest {
 
 
     @Test
-    @DisplayName("getBookByIsbn returns a Book entity when provided with an ISBN that does not exist in local database, but does exist remotely")
+    @DisplayName("getBookByIsbn returns a Book entity when provided with an ISBN that exists in local database")
     void test_getBookByIsbn_isbnExistsLocally() {
         Book book = new Book("1234567890", "AUTHOR", 1900, "http://thumbnail.com", "A book");
 
@@ -79,7 +81,7 @@ class BookServiceTest {
         Book book = new Book("1234567890", "AUTHOR", 1900, "http://thumbnail.com", "A book");
 
         when(mockRepository.findById(anyString())).thenReturn(Optional.empty());
-        when(googleDao.getRemoteBookByIsbn(anyString())).thenReturn(new Book(
+        when(googleDao.fetchBookByIsbn(anyString())).thenReturn(new Book(
                 book.getIsbn(), book.getAuthor(), book.getPublishedYear(), book.getThumbnail(), book.getDescription()
         ));
         when(mockRepository.existsById(anyString())).thenReturn(false);
@@ -96,6 +98,8 @@ class BookServiceTest {
                 () -> assertEquals(book.getThumbnail(), foundBook.getThumbnail()),
                 () -> assertEquals(book.getDescription(), foundBook.getDescription())
         );
+
+        verify(mockRepository, times(1)).save(any(Book.class));
     }
 
     @Test
@@ -103,7 +107,7 @@ class BookServiceTest {
     void test_getBookByIsbn_isbnDoesNotExist() {
         when(mockRepository.findById(anyString())).thenReturn(Optional.empty());
         when(mockRepository.existsById(anyString())).thenReturn(false);
-        when(googleDao.getRemoteBookByIsbn(anyString())).thenThrow(NoSuchElementException.class);
+        when(googleDao.fetchBookByIsbn(anyString())).thenThrow(NoSuchElementException.class);
 
         assertThrows(NoSuchElementException.class, () -> bookService.getBookByIsbn("1234567890"));
     }
