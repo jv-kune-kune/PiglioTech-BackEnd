@@ -1,16 +1,21 @@
 package org.kunekune.PiglioTech.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.kunekune.PiglioTech.model.Book;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 
+import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @WebFluxTest(GoogleBooksDAO.class)
 public class GoogleBooksDaoTest {
@@ -32,26 +37,34 @@ public class GoogleBooksDaoTest {
         mockWebServer.shutdown();
     }
 
-    // Basic test with fake data (does not resemble Google data) to get used to WebFlux testing
     @Test
-    public void initialTest() throws Exception {
+    @DisplayName("fetchBookByIsbn returns a Book object matching the returned JSON request body if one is found")
+    public void test_fetchBookByIsbn() throws Exception {
 
         mockWebServer.enqueue(new MockResponse()
                 .setBody(TestStrings.singleBookJsonResponse)
                 .addHeader("Content-Type", "application/json"));
 
-        Mono<Book> bookMono = googleBooksDAO.fetchBookByIsbn("9780099511120");
+        Book book = googleBooksDAO.fetchBookByIsbn("9780099511120");
 
+        assertAll(() -> assertEquals("9780099511120", book.getIsbn()),
+//                () -> assertEquals("Jane Eyre", book.getTitle()),
+                () -> assertEquals("Charlotte Brontë", book.getAuthor()),
+                () -> assertEquals(2007, book.getPublishedYear()),
+                () -> assertNotEquals("", book.getDescription()),
+                () -> assertNotEquals("", book.getThumbnail())
+        );
+    }
 
-        StepVerifier.create(bookMono)
-                .expectNextMatches(b -> b.getIsbn().equals("9780099511120")
-//                && b.getTitle().equals("Jane Eyre")
-                && b.getAuthor().equals("Charlotte Brontë")
-                && b.getPublishedYear().equals(2007)
-                && ! b.getDescription().isEmpty()
-                && ! b.getThumbnail().isEmpty())
-                .verifyComplete();
+    @Test
+    @DisplayName("fetchBookByIsbn throws EntityNotFoundException if no books are returned from API")
+    public void test_fetchBookByIsbn_notFound() throws Exception {
 
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(TestStrings.NoBooksJsonResponse)
+                .addHeader("Content-Type", "application/json"));
+
+        assertThrows(EntityNotFoundException.class, () -> googleBooksDAO.fetchBookByIsbn("9780099511120"));
     }
 
 }

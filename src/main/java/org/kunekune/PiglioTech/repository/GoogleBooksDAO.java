@@ -2,6 +2,7 @@ package org.kunekune.PiglioTech.repository;
 
 import org.kunekune.PiglioTech.model.Book;
 import org.kunekune.PiglioTech.model.GoogleResult;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -19,11 +20,11 @@ public class GoogleBooksDAO {
         client = WebClient.create("https://www.googleapis.com/books/v1");
     }
 
-    public Mono<Book> fetchBookByIsbn(String isbn) {
+    public Book fetchBookByIsbn(String isbn) {
         return client.get().uri(uriBuilder -> uriBuilder
                         .path("/volumes")
                         .queryParam("q", "isbn:" + isbn)
                         .build())
-                .retrieve().bodyToMono(GoogleResult.class).map(GoogleResult::asBook);
+                .retrieve().bodyToMono(GoogleResult.class).map(GoogleResult::asBook).block();
     }
 }

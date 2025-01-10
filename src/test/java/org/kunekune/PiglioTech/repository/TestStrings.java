@@ -1,6 +1,15 @@
 package org.kunekune.PiglioTech.repository;
 
 public class TestStrings {
+
+    public static final String NoBooksJsonResponse = """
+            {
+              "kind": "books#volumes",
+              "totalItems": 0,
+              "items": []
+              }
+            """;
+
     public static final String singleBookJsonResponse = """
             {
               "kind": "books#volumes",
