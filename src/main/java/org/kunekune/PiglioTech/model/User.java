@@ -7,7 +7,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
-public class pullUser {
+public class User {
 
     @Id
     private String uid;
