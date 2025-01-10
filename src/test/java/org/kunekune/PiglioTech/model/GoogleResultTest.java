@@ -1,5 +1,6 @@
 package org.kunekune.PiglioTech.model;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +10,7 @@ class GoogleResultTest {
 
     @Test
     @DisplayName("asBook returns a Book entity with the same details as the GoogleResult object")
-    void asBook() {
+    void test_asBook() {
         GoogleResult bookJson = new GoogleResult(1, new GoogleResult.GoogleBook[]{new GoogleResult.GoogleBook(
                 new GoogleResult.GoogleBook.VolumeInfo(
                         "Jane Eyre",
@@ -28,5 +29,13 @@ class GoogleResultTest {
                 () -> assertEquals("https://thumbnail", result.getThumbnail()),
                 () -> assertEquals("Description", result.getDescription())
         );
+    }
+
+    @Test
+    @DisplayName("asBook throws EntityNotFoundException if given a GoogleResult object with empty book array")
+    void test_asBook_noBooks() {
+        GoogleResult bookJson = new GoogleResult(0, new GoogleResult.GoogleBook[]{});
+
+        assertThrows(EntityNotFoundException.class, () -> GoogleResult.asBook(bookJson));
     }
 }
