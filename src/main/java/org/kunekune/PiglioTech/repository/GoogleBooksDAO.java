@@ -1,7 +1,7 @@
 package org.kunekune.PiglioTech.repository;
 
 import org.kunekune.PiglioTech.model.Book;
-import org.kunekune.PiglioTech.model.google.GoogleResult;
+import org.kunekune.PiglioTech.model.GoogleResult;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;

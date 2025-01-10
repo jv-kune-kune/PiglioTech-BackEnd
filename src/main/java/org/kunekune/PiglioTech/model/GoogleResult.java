@@ -1,6 +1,4 @@
-package org.kunekune.PiglioTech.model.google;
-
-import org.kunekune.PiglioTech.model.Book;
+package org.kunekune.PiglioTech.model;
 
 public record GoogleResult(int totalItems, GoogleBook[] items) {
     public record GoogleBook(VolumeInfo volumeInfo) {

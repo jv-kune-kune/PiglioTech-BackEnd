@@ -3,20 +3,14 @@ package org.kunekune.PiglioTech.repository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
-import org.junit.After;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.kunekune.PiglioTech.model.Book;
-import org.kunekune.PiglioTech.model.google.GoogleResult;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
-
-import java.util.Optional;
 
 @WebFluxTest(GoogleBooksDAO.class)
 public class GoogleBooksDaoTest {
