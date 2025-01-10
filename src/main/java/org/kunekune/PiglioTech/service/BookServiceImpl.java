@@ -3,10 +3,11 @@ package org.kunekune.PiglioTech.service;
 import org.kunekune.PiglioTech.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.kunekune.PiglioTech.service.BookService;
 
 
-import java.awt.print.Book;
+import org.kunekune.PiglioTech.model.Book;
+
+import java.util.NoSuchElementException;
 
 @Service
 public class BookServiceImpl implements BookService {
@@ -19,9 +20,9 @@ public class BookServiceImpl implements BookService {
         return repository.save(book);
     }
 
-    @Override getBookByIsbn(String isbn) {
-        return repository.findById(isbn).orElseThrow(() -> new RuntimeException("Book not found with ISBN: " + isbn));
-
-        }
+    @Override
+    public Book getBookByIsbn(String isbn) {
+        return repository.findById(isbn).orElseThrow(() -> new NoSuchElementException("Book not found with ISBN: " + isbn));
     }
+}
 

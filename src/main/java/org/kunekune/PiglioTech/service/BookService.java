@@ -1,6 +1,6 @@
 package org.kunekune.PiglioTech.service;
 
-import java.awt.print.Book;
+import org.kunekune.PiglioTech.model.Book;
 
 public interface BookService {
     Book saveBook(Book book);
