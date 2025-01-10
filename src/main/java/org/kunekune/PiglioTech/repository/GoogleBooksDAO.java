@@ -19,11 +19,11 @@ public class GoogleBooksDAO {
         client = WebClient.create("https://www.googleapis.com/books/v1");
     }
 
-    public Mono<GoogleResult> fetchBookByIsbn(String isbn) {
+    public Mono<Book> fetchBookByIsbn(String isbn) {
         return client.get().uri(uriBuilder -> uriBuilder
                         .path("/volumes")
                         .queryParam("q", "isbn:" + isbn)
                         .build())
-                .retrieve().bodyToMono(GoogleResult.class);
+                .retrieve().bodyToMono(GoogleResult.class).map(GoogleResult::asBook);
     }
 }

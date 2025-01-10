@@ -46,16 +46,16 @@ public class GoogleBooksDaoTest {
                 .setBody(TestStrings.singleBookJsonResponse)
                 .addHeader("Content-Type", "application/json"));
 
-        Mono<GoogleResult> bookMono = googleBooksDAO.fetchBookByIsbn("9780099511120");
+        Mono<Book> bookMono = googleBooksDAO.fetchBookByIsbn("9780099511120");
 
 
         StepVerifier.create(bookMono)
-                .expectNextMatches(b -> b.items()[0].volumeInfo().industryIdentifiers()[0].identifier().equals("9780099511120")
-                && b.items()[0].volumeInfo().title().equals("Jane Eyre")
-                && b.items()[0].volumeInfo().authors()[0].equals("Charlotte Brontë")
-                && b.items()[0].volumeInfo().publishedDate().equals("2007")
-                && ! b.items()[0].volumeInfo().description().isEmpty()
-                && ! b.items()[0].volumeInfo().imageLinks().thumbnail().isEmpty())
+                .expectNextMatches(b -> b.getIsbn().equals("9780099511120")
+//                && b.getTitle().equals("Jane Eyre")
+                && b.getAuthor().equals("Charlotte Brontë")
+                && b.getPublishedYear().equals(2007)
+                && ! b.getDescription().isEmpty()
+                && ! b.getThumbnail().isEmpty())
                 .verifyComplete();
 
     }
