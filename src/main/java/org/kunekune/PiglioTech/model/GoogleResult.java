@@ -1,6 +1,7 @@
 package org.kunekune.PiglioTech.model;
 
-import jakarta.persistence.EntityNotFoundException;
+
+import java.util.NoSuchElementException;
 
 public record GoogleResult(int totalItems, GoogleBook[] items) {
     public record GoogleBook(VolumeInfo volumeInfo) {
@@ -13,7 +14,7 @@ public record GoogleResult(int totalItems, GoogleBook[] items) {
 
     public static Book asBook(GoogleResult result) {
         if (result.totalItems() < 1) {
-            throw new EntityNotFoundException("No book found with that ISBN");
+            throw new NoSuchElementException("No book found with that ISBN");
         }
 
         String description = result.items()[0].volumeInfo().description(); // H2 varchars are size-limited

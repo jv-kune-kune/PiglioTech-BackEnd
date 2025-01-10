@@ -1,7 +1,6 @@
 package org.kunekune.PiglioTech.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityNotFoundException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterEach;
@@ -14,6 +13,8 @@ import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -57,14 +58,14 @@ public class GoogleBooksDaoTest {
     }
 
     @Test
-    @DisplayName("fetchBookByIsbn throws EntityNotFoundException if no books are returned from API")
+    @DisplayName("fetchBookByIsbn throws NoSuchElementException if no books are returned from API")
     public void test_fetchBookByIsbn_notFound() throws Exception {
 
         mockWebServer.enqueue(new MockResponse()
                 .setBody(TestStrings.NoBooksJsonResponse)
                 .addHeader("Content-Type", "application/json"));
 
-        assertThrows(EntityNotFoundException.class, () -> googleBooksDAO.fetchBookByIsbn("9780099511120"));
+        assertThrows(NoSuchElementException.class, () -> googleBooksDAO.fetchBookByIsbn("9780099511120"));
     }
 
 }

@@ -1,8 +1,9 @@
 package org.kunekune.PiglioTech.model;
 
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,10 +33,10 @@ class GoogleResultTest {
     }
 
     @Test
-    @DisplayName("asBook throws EntityNotFoundException if given a GoogleResult object with empty book array")
+    @DisplayName("asBook throws NoSuchElementException if given a GoogleResult object with empty book array")
     void test_asBook_noBooks() {
         GoogleResult bookJson = new GoogleResult(0, new GoogleResult.GoogleBook[]{});
 
-        assertThrows(EntityNotFoundException.class, () -> GoogleResult.asBook(bookJson));
+        assertThrows(NoSuchElementException.class, () -> GoogleResult.asBook(bookJson));
     }
 }
