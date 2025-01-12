@@ -51,6 +51,8 @@ public class BookControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.thumbnail").value(book.getThumbnail()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.description").value(book.getDescription()));
     }
+
+
     @Test
     @DisplayName("GET /api/v1/books/{isbn} returns HTTP 404 if book is not found")
     void test_getBookByIsbn_notFound() throws Exception {
@@ -61,6 +63,31 @@ public class BookControllerTest {
                                 .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
+
+
+    }
+    @Test
+    @DisplayName("GET /api/v1/books/{isbn} returns HTTP 400 for invalid ISBN format")
+    void test_getBookByIsbn_invalidFormat() throws Exception {
+        mockMvc.perform(
+                        MockMvcRequestBuilders.get("/api/v1/books/INVALID_ISBN")
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+
+
+    @Test
+    @DisplayName("GET /api/v1/books/{isbn} returns HTTP 500 for unexpected service failure")
+    void test_getBookByIsbn_serviceFailure() throws Exception {
+        when(mockService.getBookByIsbn(anyString())).thenThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders.get("/api/v1/books/1234567890")
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(MockMvcResultMatchers.status().isInternalServerError());
     }
 }
 
