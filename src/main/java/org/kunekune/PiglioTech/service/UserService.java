@@ -1,5 +1,6 @@
 package org.kunekune.PiglioTech.service;
 
+
 import org.kunekune.PiglioTech.model.User;
 
 public interface UserService {
