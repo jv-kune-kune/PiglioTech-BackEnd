@@ -18,13 +18,14 @@ class GoogleResultTest {
                         new String[] {"Charlotte Brontë"},
                         "2007",
                         "Description",
-                        new GoogleResult.Identifier[]{new GoogleResult.Identifier("12345")},
+                        new GoogleResult.Identifier[]{new GoogleResult.Identifier("ISBN_13", "12345")},
                         new GoogleResult.ImageLinks("https://thumbnail")
                 ))});
 
-        Book result = GoogleResult.asBook(bookJson);
+        Book result = bookJson.asBook();
 
         assertAll(() -> assertEquals("12345", result.getIsbn()),
+                () -> assertEquals("Jane Eyre", result.getTitle()),
                 () -> assertEquals("Charlotte Brontë", result.getAuthor()),
                 () -> assertEquals(2007, result.getPublishedYear()),
                 () -> assertEquals("https://thumbnail", result.getThumbnail()),
@@ -37,6 +38,6 @@ class GoogleResultTest {
     void test_asBook_noBooks() {
         GoogleResult bookJson = new GoogleResult(0, new GoogleResult.GoogleBook[]{});
 
-        assertThrows(NoSuchElementException.class, () -> GoogleResult.asBook(bookJson));
+        assertThrows(NoSuchElementException.class, () -> bookJson.asBook());
     }
 }

@@ -6,7 +6,6 @@ import org.kunekune.PiglioTech.model.Book;
 import org.kunekune.PiglioTech.model.Region;
 import org.kunekune.PiglioTech.model.User;
 import org.kunekune.PiglioTech.repository.BookRepository;
-import org.kunekune.PiglioTech.repository.DummyGoogleBooksDao;
 import org.kunekune.PiglioTech.repository.GoogleBooksDAO;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -36,16 +35,17 @@ class BookServiceTest {
     @Test
     @DisplayName("saveBook returns a new Book entity with matching details when provided a valid Book entity")
     void test_saveBook_validBook() {
-        Book book = new Book("1234567890", "AUTHOR", 1900, "http://thumbnail.com", "A book");
+        Book book = new Book("1234567890", "TITLE", "AUTHOR", 1900, "http://thumbnail.com", "A book");
 
         when(mockRepository.save(any(Book.class))).thenAnswer(a -> {
             Book submittedBook = a.getArgument(0);
-            return new Book(submittedBook.getIsbn(), submittedBook.getAuthor(), submittedBook.getPublishedYear(), submittedBook.getThumbnail(), submittedBook.getDescription());
+            return new Book(submittedBook.getIsbn(), submittedBook.getTitle(), submittedBook.getAuthor(), submittedBook.getPublishedYear(), submittedBook.getThumbnail(), submittedBook.getDescription());
         });
 
         Book returnedBook = bookService.saveBook(book);
 
         assertAll(() -> assertEquals(book.getIsbn(), returnedBook.getIsbn()),
+                () -> assertEquals(book.getTitle(), returnedBook.getTitle()),
                 () -> assertEquals(book.getAuthor(), returnedBook.getAuthor()),
                 () -> assertEquals(book.getPublishedYear(), returnedBook.getPublishedYear()),
                 () -> assertEquals(book.getPublishedYear(), returnedBook.getPublishedYear()),
@@ -58,16 +58,17 @@ class BookServiceTest {
     @Test
     @DisplayName("getBookByIsbn returns a Book entity when provided with an ISBN that exists in local database")
     void test_getBookByIsbn_isbnExistsLocally() {
-        Book book = new Book("1234567890", "AUTHOR", 1900, "http://thumbnail.com", "A book");
+        Book book = new Book("1234567890", "TITLE", "AUTHOR", 1900, "http://thumbnail.com", "A book");
 
         when(mockRepository.findById(anyString())).thenReturn(Optional.of(
-                new Book(book.getIsbn(), book.getAuthor(), book.getPublishedYear(), book.getThumbnail(), book.getDescription())
+                new Book(book.getIsbn(), book.getTitle(), book.getAuthor(), book.getPublishedYear(), book.getThumbnail(), book.getDescription())
         ));
         when(mockRepository.existsById(anyString())).thenReturn(true);
 
         Book foundBook = bookService.getBookByIsbn("1234567890");
 
         assertAll(() -> assertEquals(book.getIsbn(), foundBook.getIsbn()),
+                () -> assertEquals(book.getTitle(), foundBook.getTitle()),
                 () -> assertEquals(book.getAuthor(), foundBook.getAuthor()),
                 () -> assertEquals(book.getPublishedYear(), foundBook.getPublishedYear()),
                 () -> assertEquals(book.getThumbnail(), foundBook.getThumbnail()),
@@ -78,21 +79,22 @@ class BookServiceTest {
     @Test
     @DisplayName("getBookByIsbn returns a Book entity when provided with an ISBN that does not exist in local database, but does exist remotely")
     void test_getBookByIsbn_isbnExistsRemotely() {
-        Book book = new Book("1234567890", "AUTHOR", 1900, "http://thumbnail.com", "A book");
+        Book book = new Book("1234567890", "TITLE", "AUTHOR", 1900, "http://thumbnail.com", "A book");
 
         when(mockRepository.findById(anyString())).thenReturn(Optional.empty());
         when(googleDao.fetchBookByIsbn(anyString())).thenReturn(new Book(
-                book.getIsbn(), book.getAuthor(), book.getPublishedYear(), book.getThumbnail(), book.getDescription()
+                book.getIsbn(), book.getTitle(), book.getAuthor(), book.getPublishedYear(), book.getThumbnail(), book.getDescription()
         ));
         when(mockRepository.existsById(anyString())).thenReturn(false);
         when (mockRepository.save(any(Book.class))).thenAnswer(a -> {
             Book savedBook = a.getArgument(0);
-            return new Book(savedBook.getIsbn(), savedBook.getAuthor(), savedBook.getPublishedYear(), savedBook.getThumbnail(), savedBook.getDescription());
+            return new Book(savedBook.getIsbn(), savedBook.getTitle(), savedBook.getAuthor(), savedBook.getPublishedYear(), savedBook.getThumbnail(), savedBook.getDescription());
         });
 
         Book foundBook = bookService.getBookByIsbn("1234567890");
 
         assertAll(() -> assertEquals(book.getIsbn(), foundBook.getIsbn()),
+                () -> assertEquals(book.getTitle(), foundBook.getTitle()),
                 () -> assertEquals(book.getAuthor(), foundBook.getAuthor()),
                 () -> assertEquals(book.getPublishedYear(), foundBook.getPublishedYear()),
                 () -> assertEquals(book.getThumbnail(), foundBook.getThumbnail()),

@@ -1,6 +1,7 @@
 package org.kunekune.PiglioTech.model;
 
 
+import java.awt.*;
 import java.util.NoSuchElementException;
 
 public record GoogleResult(int totalItems, GoogleBook[] items) {
@@ -9,21 +10,48 @@ public record GoogleResult(int totalItems, GoogleBook[] items) {
                                  String publishedDate, String description,
                                  Identifier[] industryIdentifiers, ImageLinks imageLinks) {}
     }
-    public record Identifier(String identifier) {}
+    public record Identifier(String type, String identifier) {}
     public record ImageLinks(String thumbnail) {}
 
-    public static Book asBook(GoogleResult result) {
-        if (result.totalItems() < 1) {
+    public Book asBook() {
+        if (totalItems < 1) {
             throw new NoSuchElementException("No book found with that ISBN");
         }
 
-        String description = result.items()[0].volumeInfo().description(); // H2 varchars are size-limited
-        boolean long_desc =  (description.length() > 255);
+        GoogleBook.VolumeInfo volumeInfo = items[0].volumeInfo;
 
-        return new Book(result.items()[0].volumeInfo().industryIdentifiers()[0].identifier(),
-                result.items()[0].volumeInfo().authors()[0],
-                Integer.valueOf(result.items()[0].volumeInfo().publishedDate()),
-        result.items()[0].volumeInfo().imageLinks().thumbnail(),
-        long_desc ? description.substring(0, 251) + "..." : description);
+        Identifier[] identifiers = volumeInfo.industryIdentifiers;
+        String isbn = null;
+        for (Identifier identifier : identifiers) {
+            if (identifier.type.equals("ISBN_13")) {
+                isbn = identifier.identifier;
+                break;
+            }
+        }
+        if (isbn == null) {
+            throw new IllegalStateException("Identifier problems: ISBN_13 not located");
+        }
+
+        String publishedDate = volumeInfo.publishedDate.substring(0, 4);
+
+        String description = volumeInfo.description;
+        description = (description == null) ? "No description provided" : description;
+        description = (description.length() > 255) ? description.substring(0, 251) + "..." : description; // H2 varchars are size-limited
+
+        String thumbnail;
+        ImageLinks links;
+        if ((links = volumeInfo.imageLinks) != null) {
+            thumbnail = links.thumbnail;
+        } else {
+            thumbnail = "https://images.squarespace-cdn.com/content/v1/5add0dce697a985bcc001d2c/1524679485048-OS856WANHVR26WPONXPI/004.JPG";
+        }
+
+        return new Book(isbn,
+                volumeInfo.title,
+                volumeInfo.authors[0],
+                Integer.valueOf(publishedDate),
+                thumbnail,
+                description
+        );
     }
 }
