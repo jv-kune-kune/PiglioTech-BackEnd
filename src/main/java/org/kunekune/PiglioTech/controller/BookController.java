@@ -19,6 +19,9 @@ public class BookController {
 
     @GetMapping("/{isbn}")
     public ResponseEntity<Book> getBookByIsbn(@PathVariable String isbn) {
+        if (isbn.length() != 10 && isbn.length() != 13) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         Book book = bookService.getBookByIsbn(isbn);
         return new ResponseEntity<>(book, HttpStatus.OK);
     }
