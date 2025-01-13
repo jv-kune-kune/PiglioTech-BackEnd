@@ -68,4 +68,83 @@ public class GoogleBooksDaoTest {
         assertThrows(NoSuchElementException.class, () -> googleBooksDAO.fetchBookByIsbn("9780099511120"));
     }
 
+
+    // additional tests
+
+    @Test
+    @DisplayName("fetchBookByIsbn throws RuntimeException if the API request times out")
+    public void test_fetchBookByIsbn_apiTimeout() throws Exception {
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(504) // Gateway Timeout
+                .setBody("{\"error\": \"Timeout\"}")
+                .addHeader("Content-Type", "application/json"));
+
+        assertThrows(RuntimeException.class, () -> googleBooksDAO.fetchBookByIsbn("9780099511120"));
+    }
+
+    @Test
+    @DisplayName("fetchBookByIsbn throws RuntimeException if the API returns an invalid JSON")
+    public void test_fetchBookByIsbn_invalidJson() throws Exception {
+        mockWebServer.enqueue(new MockResponse()
+                .setBody("{ invalid-json }")
+                .addHeader("Content-Type", "application/json"));
+
+        assertThrows(RuntimeException.class, () -> googleBooksDAO.fetchBookByIsbn("9780099511120"));
+    }
+
+    @Test
+    @DisplayName("fetchBookByIsbn throws RuntimeException if the API returns an error")
+    public void test_fetchBookByIsbn_apiError() throws Exception {
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(500)
+                .setBody("{\"error\": \"Internal Server Error\"}")
+                .addHeader("Content-Type", "application/json"));
+
+        assertThrows(RuntimeException.class, () -> googleBooksDAO.fetchBookByIsbn("9780099511120"));
+    }
+
+    @Test
+    @DisplayName("fetchBookByIsbn handles partial API response gracefully")
+    public void test_fetchBookByIsbn_partialResponse() throws Exception {
+        // Partial JSON response with missing author and description
+        String partialResponse = """
+        {
+          "kind": "books#volumes",
+          "totalItems": 1,
+          "items": [
+            {
+              "volumeInfo": {
+                "title": "Partial Book",
+                "authors": [],
+                "publishedDate": "2020",
+                "imageLinks": { "thumbnail": "http://example.com/thumbnail.jpg" }
+              }
+            }
+          ]
+        }
+    """;
+
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(partialResponse)
+                .addHeader("Content-Type", "application/json"));
+
+        Book book = googleBooksDAO.fetchBookByIsbn("9780099511120");
+
+        assertAll(
+                () -> assertEquals("9780099511120", book.getIsbn()),
+                () -> assertNull(book.getAuthor(), "Author should be null when not provided"),
+                () -> assertEquals(2020, book.getPublishedYear()),
+                () -> assertEquals("http://example.com/thumbnail.jpg", book.getThumbnail()),
+                () -> assertNull(book.getDescription(), "Description should be null when not provided")
+        );
+    }
+
+    @Test
+    @DisplayName("fetchBookByIsbn throws IllegalArgumentException if the ISBN is empty")
+    public void test_fetchBookByIsbn_emptyIsbn() {
+        assertThrows(IllegalArgumentException.class, () -> googleBooksDAO.fetchBookByIsbn(""));
+    }
+
+
+
 }
