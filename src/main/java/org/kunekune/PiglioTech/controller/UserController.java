@@ -1,5 +1,6 @@
 package org.kunekune.PiglioTech.controller;
 
+import org.kunekune.PiglioTech.model.Region;
 import org.kunekune.PiglioTech.model.User;
 import org.kunekune.PiglioTech.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,12 +8,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/users")  // base URL for user-related endpoints
 public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @GetMapping()
+    public ResponseEntity<List<User>> getUsersByRegion(@RequestParam(required = true) Region region, @RequestParam(required = false) String exclude) {
+        if (exclude != null) {
+            return new ResponseEntity<>(userService.getUsersByRegionExclude(region, exclude), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(userService.getUsersByRegion(region), HttpStatus.OK);
+        }
+    }
 
     // get a user by ID
     @GetMapping("/{id}")

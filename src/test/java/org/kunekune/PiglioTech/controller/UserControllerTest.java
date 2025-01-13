@@ -17,8 +17,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -143,6 +145,77 @@ public class UserControllerTest {
     void test_post_noBody() throws Exception {
         mockMvcController.perform(
                 MockMvcRequestBuilders.post(endpoint)
+        ).andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+
+
+    @Test
+    @DisplayName("GET request with no parameters to /api/v1/users returns HTTP 400")
+    void test_getRegion_noRegion() throws Exception {
+        mockMvcController.perform(
+                MockMvcRequestBuilders.get(endpoint)
+        ).andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("GET request with valid region to /api/v1/users returns list of all users in that region and HTTP 200")
+    void test_getRegion_validRegion() throws Exception {
+        User user1 = new User("UID_1", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
+        User user2 = new User("UID_2", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
+        User user3 = new User("UID_3", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
+        User user4 = new User("UID_4", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
+        User user5 = new User("UID_5", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
+        List<User> users = List.of(user1, user2, user3, user4, user5);
+
+        when(mockService.getUsersByRegion(any(Region.class))).thenReturn(users);
+
+        mockMvcController.perform(
+                MockMvcRequestBuilders.get(endpoint)
+                        .param("region", "NORTH_WEST")
+        ).andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(5)));
+    }
+
+    @Test
+    @DisplayName("GET request with invalid region to /api/v1/users returns HTTP 400")
+    void test_getRegion_invalidRegion() throws Exception {
+        when(mockService.getUsersByRegion(any(Region.class))).thenReturn(List.of());
+
+        mockMvcController.perform(
+                        MockMvcRequestBuilders.get(endpoint)
+                                .param("region", "north_west")
+                ).andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("GET request with valid region and UID string to /api/v1/users returns list of users and HTTP 200")
+    void test_getRegion_validRegion_excludeString() throws Exception {
+        User user1 = new User("UID_1", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
+        User user2 = new User("UID_2", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
+        User user4 = new User("UID_4", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
+        User user5 = new User("UID_5", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
+        List<User> users = List.of(user1, user2, user4, user5);
+
+        when(mockService.getUsersByRegionExclude(any(Region.class), anyString())).thenReturn(users);
+
+        mockMvcController.perform(
+                        MockMvcRequestBuilders.get(endpoint)
+                                .param("region", "NORTH_WEST")
+                                .param("exclude", "UID_3")
+                ).andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(4)));
+    }
+
+    @Test
+    @DisplayName("GET request with invalid region and UID string to /api/v1/users returns HTTP 400")
+    void test_getRegion_invalidRegion_excludeString() throws Exception {
+        when(mockService.getUsersByRegionExclude(any(Region.class), anyString())).thenReturn(List.of());
+
+        mockMvcController.perform(
+                MockMvcRequestBuilders.get(endpoint)
+                        .param("region", "north_west")
+                        .param("exclude", "UID_3")
         ).andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 }
