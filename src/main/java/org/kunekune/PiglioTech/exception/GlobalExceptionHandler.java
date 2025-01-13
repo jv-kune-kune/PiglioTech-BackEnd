@@ -14,4 +14,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleNoSuchElement(NoSuchElementException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(ApiServiceException.class)
+    public ResponseEntity<String> handleApiServiceError(ApiServiceException e) {
+        return new ResponseEntity<>(e.getMessage() + "\n" + e.getApiResponse(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }
