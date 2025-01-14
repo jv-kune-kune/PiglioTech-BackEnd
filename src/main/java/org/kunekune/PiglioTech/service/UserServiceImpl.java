@@ -11,14 +11,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 @Service
 public class UserServiceImpl implements UserService {
 
-    //TODO: Consider renaming to distinguish
     @Autowired
-    private UserRepository repository;
+    private UserRepository userRepository;
 
     @Autowired
     private BookRepository bookRepository;
@@ -31,17 +31,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User saveUser(User user) {
-        return repository.save(user);
+        return userRepository.save(user);
     }
 
     @Override
     public User getUserByUid(String uid) {
-        return repository.findById(uid).orElseThrow();
+        return userRepository.findById(uid).orElseThrow();
     }
 
     @Override
     public List<User> getUsersByRegion(Region region) {
-        return repository.getUsersByRegion(region);
+        return userRepository.getUsersByRegion(region);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User patchUserBooks(String uid, String isbn) {
-        User user = repository.findById(uid).orElseThrow(() ->
+        User user = userRepository.findById(uid).orElseThrow(() ->
                 new NoSuchElementException("User with UID " + uid + " not found.")
         );
 
@@ -73,13 +73,41 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Unable to fetch book with ISBN: " + isbn);
 
         user.getBooks().add(book);
-        repository.save(user);
+        userRepository.save(user);
         return user;
     }
 
-    //TODO: add general patch impl
+    @Override
+    public User updateUserDetails(String uid, Map<String, Object> updates) {
+        // Fetch the user
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new NoSuchElementException("User with ID " + uid + " not found."));
 
-    //Is valid user user helper method
+        // Update user fields dynamically
+        updates.forEach((key, value) -> {
+            switch (key) {
+                case "name":
+                    user.setName((String) value);
+                    break;
+                case "email":
+                    user.setEmail((String) value);
+                    break;
+                case "region":
+                    user.setRegion(Region.valueOf((String) value.toString().toUpperCase()));
+                    break;
+                case "thumbnail":
+                    user.setThumbnail((String) value);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid field: " + key);
+            }
+        });
+
+        // Save the updated user
+        return userRepository.save(user);
+    }
+
+    // is valid user user helper method
     @Override
     public boolean isValidUser(User user) {
         return user != null &&
