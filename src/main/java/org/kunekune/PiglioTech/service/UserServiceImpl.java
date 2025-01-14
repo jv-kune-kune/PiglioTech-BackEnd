@@ -50,17 +50,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void removeBookFromUser(String userId, String isbn) {
-        // Dummy
         {
-            // get the user
             User user = repository.findById(userId).orElseThrow(() ->
                     new NoSuchElementException("User with ID " + userId + " not found")
             );
             boolean removed = user.getBooks().removeIf(book -> Objects.equals(book.getIsbn(), isbn));
 
-            // in case no book was removed, throw an exception
+
             if (!removed) {
-                throw new IllegalArgumentException("Book with ISBN " + isbn + " not found in user's library");
+                throw new NoSuchElementException("Book with ISBN " + isbn + " not found in user's library");
             }
             repository.save(user);
 
