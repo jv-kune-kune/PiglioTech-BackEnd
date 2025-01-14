@@ -52,9 +52,6 @@ public class Book {
     public String getDescription() {
         return description;
     }
-    public List<User> getUsers() {
-        return users;
-    }
 
 
     public void setAuthor(String author) {
