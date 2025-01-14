@@ -1,6 +1,7 @@
 package org.kunekune.PiglioTech.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -269,6 +270,19 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(isbn)
         ).andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("POST request to /api/v1/users/{id}/books with ISBN already associated with user returns HTTP 409")
+    void test_addBookToUser_conflictingIsbns() throws Exception {
+        String isbn = mapper.writeValueAsString(new IsbnDto("1234567890"));
+        when(mockService.addBookToUser(anyString(), anyString())).thenThrow(EntityExistsException.class);
+
+        mockMvcController.perform(
+                MockMvcRequestBuilders.post(endpoint + "/98765/books")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(isbn)
+        ).andExpect(MockMvcResultMatchers.status().isConflict());
     }
 
     @Test

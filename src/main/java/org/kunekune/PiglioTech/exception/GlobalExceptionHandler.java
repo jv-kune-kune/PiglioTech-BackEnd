@@ -1,5 +1,6 @@
 package org.kunekune.PiglioTech.exception;
 
+import jakarta.persistence.EntityExistsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -18,5 +19,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ApiServiceException.class)
     public ResponseEntity<String> handleApiServiceError(ApiServiceException e) {
         return new ResponseEntity<>(e.getMessage() + "\n" + e.getApiResponse(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(EntityExistsException.class)
+    public ResponseEntity<String> handleEntityConflict(EntityExistsException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
     }
 }
