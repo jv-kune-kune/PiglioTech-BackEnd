@@ -2,6 +2,7 @@ package org.kunekune.PiglioTech.controller;
 
 import org.kunekune.PiglioTech.model.Region;
 import org.kunekune.PiglioTech.model.User;
+import org.kunekune.PiglioTech.service.BookService;
 import org.kunekune.PiglioTech.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/users")  // base URL for user-related endpoints
@@ -16,6 +18,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private BookService bookService;
 
     @GetMapping()
     public ResponseEntity<List<User>> getUsersByRegion(@RequestParam(required = true) Region region, @RequestParam(required = false) String exclude) {
@@ -42,6 +47,14 @@ public class UserController {
         User savedUser = userService.saveUser(user);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
+
+    // save a book to existing user
+    @PatchMapping("/user/{id}/book")
+    public ResponseEntity<Map<String, Object>> saveBookToUser(@PathVariable String uid, @RequestBody String isbn) {
+        User updatedUser = userService.patchUserBooks(uid, isbn);
+        return ResponseEntity.ok(Map.of(
+                "message", "Success. Book added to user.",
+                "user", updatedUser
+        ));
+    }
 }
-
-
