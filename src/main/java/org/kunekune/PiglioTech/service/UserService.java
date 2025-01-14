@@ -10,4 +10,6 @@ public interface UserService {
     User getUserByUid(String uid);
     List<User> getUsersByRegion(Region region);
     List<User> getUsersByRegionExclude(Region region, String exclude);
+    User patchUserBooks (String uid, String isbn);
+    boolean isValidUser(User user);
 }
