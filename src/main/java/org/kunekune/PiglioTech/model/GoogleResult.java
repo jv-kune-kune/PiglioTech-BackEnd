@@ -1,7 +1,8 @@
 package org.kunekune.PiglioTech.model;
 
 
-import java.awt.*;
+import org.kunekune.PiglioTech.exception.ApiServiceException;
+
 import java.util.NoSuchElementException;
 
 public record GoogleResult(int totalItems, GoogleBook[] items) {
@@ -12,6 +13,15 @@ public record GoogleResult(int totalItems, GoogleBook[] items) {
     }
     public record Identifier(String type, String identifier) {}
     public record ImageLinks(String thumbnail) {}
+
+    public boolean containsValidBook() {
+        if (totalItems < 1) throw new NoSuchElementException("No book found with that ISBN");
+
+        GoogleBook.VolumeInfo info = items[0].volumeInfo;
+        if (info.title == null) throw new ApiServiceException("No title returned", "Malformed API response");
+        if (info.authors.length < 1) throw new ApiServiceException("No authors listed", "Malformed API response");
+        return true;
+    }
 
     public Book asBook() {
         if (totalItems < 1) {
@@ -32,7 +42,12 @@ public record GoogleResult(int totalItems, GoogleBook[] items) {
             throw new IllegalStateException("Identifier problems: ISBN_13 not located");
         }
 
-        String publishedDate = volumeInfo.publishedDate.substring(0, 4);
+        String publishedDate = volumeInfo.publishedDate;
+        if (publishedDate == null) {
+            publishedDate = "No date available";
+        } else {
+            publishedDate = publishedDate.substring(0, 4);
+        }
 
         String description = volumeInfo.description;
         description = (description == null) ? "No description provided" : description;
@@ -49,7 +64,7 @@ public record GoogleResult(int totalItems, GoogleBook[] items) {
         return new Book(isbn,
                 volumeInfo.title,
                 volumeInfo.authors[0],
-                Integer.valueOf(publishedDate),
+                publishedDate,
                 thumbnail,
                 description
         );
