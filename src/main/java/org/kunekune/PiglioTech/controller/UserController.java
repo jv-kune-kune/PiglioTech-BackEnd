@@ -58,4 +58,17 @@ public class UserController {
         ));
     }
 
+    // update partial user details
+    @PatchMapping("/{uid}")
+    public ResponseEntity<Map<String, Object>> updateUserDetails(
+            @PathVariable String uid,
+            @RequestBody Map<String, Object> updates
+    ) {
+        User updatedUser = userService.updateUserDetails(uid, updates);
+        return ResponseEntity.ok(Map.of(
+                "message", "User successfully updated",
+                "user", updatedUser
+        ));
+    }
+
 }
