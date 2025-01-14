@@ -49,7 +49,7 @@ public class UserController {
     }
 
     // save a book to existing user
-    @PatchMapping("/user/{id}/book")
+    @PatchMapping("/{id}/book")
     public ResponseEntity<Map<String, Object>> saveBookToUser(@PathVariable String uid, @RequestBody String isbn) {
         User updatedUser = userService.patchUserBooks(uid, isbn);
         return ResponseEntity.ok(Map.of(
@@ -57,4 +57,5 @@ public class UserController {
                 "user", updatedUser
         ));
     }
+
 }
