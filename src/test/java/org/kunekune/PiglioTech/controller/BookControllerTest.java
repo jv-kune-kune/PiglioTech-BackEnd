@@ -41,7 +41,7 @@ public class BookControllerTest {
     @Test
     @DisplayName("GET/api/v1/books/{isbn} returns book details and HTTP 200 if book is found")
     void test_getBookByIsbn_found() throws Exception {
-        Book book = new Book("1234567890", "Title", "Author", 2000, "http://thumbnail.com", "Description");
+        Book book = new Book("1234567890", "Title", "Author", "2000", "http://thumbnail.com", "Description");
 
         when(mockService.getBookByIsbn(anyString())).thenReturn(book);
 

@@ -35,7 +35,7 @@ class BookServiceTest {
     @Test
     @DisplayName("saveBook returns a new Book entity with matching details when provided a valid Book entity")
     void test_saveBook_validBook() {
-        Book book = new Book("1234567890", "TITLE", "AUTHOR", 1900, "http://thumbnail.com", "A book");
+        Book book = new Book("1234567890", "TITLE", "AUTHOR", "1900", "http://thumbnail.com", "A book");
 
         when(mockRepository.save(any(Book.class))).thenAnswer(a -> {
             Book submittedBook = a.getArgument(0);
@@ -58,7 +58,7 @@ class BookServiceTest {
     @Test
     @DisplayName("getBookByIsbn returns a Book entity when provided with an ISBN that exists in local database")
     void test_getBookByIsbn_isbnExistsLocally() {
-        Book book = new Book("1234567890", "TITLE", "AUTHOR", 1900, "http://thumbnail.com", "A book");
+        Book book = new Book("1234567890", "TITLE", "AUTHOR", "1900", "http://thumbnail.com", "A book");
 
         when(mockRepository.findById(anyString())).thenReturn(Optional.of(
                 new Book(book.getIsbn(), book.getTitle(), book.getAuthor(), book.getPublishedYear(), book.getThumbnail(), book.getDescription())
@@ -79,7 +79,7 @@ class BookServiceTest {
     @Test
     @DisplayName("getBookByIsbn returns a Book entity when provided with an ISBN that does not exist in local database, but does exist remotely")
     void test_getBookByIsbn_isbnExistsRemotely() {
-        Book book = new Book("1234567890", "TITLE", "AUTHOR", 1900, "http://thumbnail.com", "A book");
+        Book book = new Book("1234567890", "TITLE", "AUTHOR", "1900", "http://thumbnail.com", "A book");
 
         when(mockRepository.findById(anyString())).thenReturn(Optional.empty());
         when(googleDao.fetchBookByIsbn(anyString())).thenReturn(new Book(

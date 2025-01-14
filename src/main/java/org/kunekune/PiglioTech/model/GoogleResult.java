@@ -42,7 +42,12 @@ public record GoogleResult(int totalItems, GoogleBook[] items) {
             throw new IllegalStateException("Identifier problems: ISBN_13 not located");
         }
 
-        String publishedDate = volumeInfo.publishedDate.substring(0, 4);
+        String publishedDate = volumeInfo.publishedDate;
+        if (publishedDate == null) {
+            publishedDate = "No date available";
+        } else {
+            publishedDate = publishedDate.substring(0, 4);
+        }
 
         String description = volumeInfo.description;
         description = (description == null) ? "No description provided" : description;
@@ -59,7 +64,7 @@ public record GoogleResult(int totalItems, GoogleBook[] items) {
         return new Book(isbn,
                 volumeInfo.title,
                 volumeInfo.authors[0],
-                Integer.valueOf(publishedDate),
+                publishedDate,
                 thumbnail,
                 description
         );

@@ -46,7 +46,7 @@ public class GoogleBooksDaoTest {
         assertAll(() -> assertEquals("9780099511120", book.getIsbn()),
                 () -> assertEquals("Jane Eyre", book.getTitle()),
                 () -> assertEquals("Charlotte Brontë", book.getAuthor()),
-                () -> assertEquals(2007, book.getPublishedYear()),
+                () -> assertEquals("2007", book.getPublishedYear()),
                 () -> assertNotEquals("", book.getDescription()),
                 () -> assertNotEquals("", book.getThumbnail())
         );

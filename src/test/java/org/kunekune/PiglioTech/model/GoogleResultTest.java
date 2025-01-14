@@ -27,7 +27,7 @@ class GoogleResultTest {
         assertAll(() -> assertEquals("12345", result.getIsbn()),
                 () -> assertEquals("Jane Eyre", result.getTitle()),
                 () -> assertEquals("Charlotte Brontë", result.getAuthor()),
-                () -> assertEquals(2007, result.getPublishedYear()),
+                () -> assertEquals("2007", result.getPublishedYear()),
                 () -> assertEquals("https://thumbnail", result.getThumbnail()),
                 () -> assertEquals("Description", result.getDescription())
         );
@@ -60,7 +60,7 @@ class GoogleResultTest {
 
 
     @Test
-    @DisplayName("asBook throws IllegalArgumentException if publishedDate is missing")
+    @DisplayName("asBook sets publishedYear to explanatory string if publishedDate is missing from JSON")
     void test_asBook_missingPublishedDate() {
         GoogleResult bookJson = new GoogleResult(1, new GoogleResult.GoogleBook[]{new GoogleResult.GoogleBook(
                 new GoogleResult.GoogleBook.VolumeInfo(
@@ -72,7 +72,9 @@ class GoogleResultTest {
                         new GoogleResult.ImageLinks("https://example.com/hound.jpg")
                 ))});
 
-        assertThrows(IllegalArgumentException.class, () -> bookJson.asBook());
+        Book returnedBook = bookJson.asBook();
+
+        assertEquals("No date available", returnedBook.getPublishedYear());
     }
 
 
@@ -94,7 +96,7 @@ class GoogleResultTest {
         assertAll(() -> assertEquals("12345", result.getIsbn()),
                 () -> assertEquals("The Hound of the Baskervilles", result.getTitle()),
                 () -> assertEquals("Arthur Conan Doyle", result.getAuthor()),
-                () -> assertEquals(1902, result.getPublishedYear()),
+                () -> assertEquals("1902", result.getPublishedYear()),
                 () -> assertEquals("https://example.com/hound.jpg", result.getThumbnail()),
                 () -> assertEquals("No description provided", result.getDescription()) // Default description
         );
@@ -118,7 +120,7 @@ class GoogleResultTest {
         assertAll(() -> assertEquals("12345", result.getIsbn()),
                 () -> assertEquals("The Hound of the Baskervilles", result.getTitle()),
                 () -> assertEquals("Arthur Conan Doyle", result.getAuthor()),
-                () -> assertEquals(1902, result.getPublishedYear()),
+                () -> assertEquals("1902", result.getPublishedYear()),
                 () -> assertEquals("https://images.squarespace-cdn.com/content/v1/5add0dce697a985bcc001d2c/1524679485048-OS856WANHVR26WPONXPI/004.JPG", result.getThumbnail()), // Default thumbnail
                 () -> assertEquals("A gripping tale of mystery and danger.", result.getDescription())
         );

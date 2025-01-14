@@ -16,26 +16,22 @@ public class Book {
     @Column
     private String author;
     @Column
-    private Integer publishedYear;
+    private String publishedYear;
     @Column
     private String thumbnail;
     @Column
     private String description;
 
-    @ManyToMany(mappedBy = "books")
-    private List<User> users;
-
     public Book() {
     }
 
-    public Book(String isbn, String title, String author, Integer year, String thumbnail, String description) {
+    public Book(String isbn, String title, String author, String year, String thumbnail, String description) {
         this.isbn = isbn;
         this.title = title;
         this.author = author;
         this.publishedYear = year;
         this.thumbnail = thumbnail;
         this.description = description;
-        this.users = new ArrayList<>();
     }
 
     public String getIsbn() {
@@ -47,7 +43,7 @@ public class Book {
     public String getAuthor() {
         return author;
     }
-    public Integer getPublishedYear() {
+    public String getPublishedYear() {
         return publishedYear;
     }
     public String getThumbnail() {
@@ -67,7 +63,7 @@ public class Book {
     public void setTitle(String title) {
         this.title = title;
     }
-    public void setPublishedYear(Integer publishedYear) {
+    public void setPublishedYear(String publishedYear) {
         this.publishedYear = publishedYear;
     }
     public void setThumbnail(String thumbnail) {
