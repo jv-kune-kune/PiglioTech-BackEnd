@@ -1,5 +1,7 @@
 package org.kunekune.PiglioTech.service;
 
+import jakarta.persistence.EntityExistsException;
+import org.kunekune.PiglioTech.model.Book;
 import org.kunekune.PiglioTech.model.Region;
 import org.kunekune.PiglioTech.model.User;
 import org.kunekune.PiglioTech.repository.UserRepository;
@@ -16,6 +18,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository repository;
+
+    @Autowired
+    private BookService bookService;
 
     @Override
     public User saveUser(User user) {
@@ -42,10 +47,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-
     public User addBookToUser(String id, String isbn) {
-        // Dummy
-        return new User("12345", "NAME", "EMAIL", Region.NORTH_WEST, "http://thumbnail.com/0");
+        Book book = bookService.getBookByIsbn(isbn);
+        User user = repository.findById(id).orElseThrow();
+        if (user.getBooks().contains(book)) {
+            throw new EntityExistsException("User already owns book");
+        }
+        user.getBooks().add(book);
+        return repository.save(user);
     }
 
     @Override

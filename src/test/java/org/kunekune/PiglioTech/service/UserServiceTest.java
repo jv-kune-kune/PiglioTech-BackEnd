@@ -1,5 +1,6 @@
 package org.kunekune.PiglioTech.service;
 
+import jakarta.persistence.EntityExistsException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.kunekune.PiglioTech.model.Book;
@@ -24,6 +25,9 @@ class UserServiceTest {
 
     @Mock
     private UserRepository mockRepository;
+
+    @Mock
+    private BookService mockBookService;
 
     @InjectMocks
     private UserService userService = new UserServiceImpl();
@@ -171,6 +175,64 @@ class UserServiceTest {
         List<User> returnedUsers = userService.getUsersByRegionExclude(Region.NORTH_EAST, "UID_1");
 
         assertTrue((returnedUsers.isEmpty()));
+    }
+
+
+
+    @Test
+    @DisplayName("addBookToUser returns a user object with a book added to it when both supplied user ID and book ISBN are valid")
+    void test_addBookToUser_validIds() {
+        User user = new User("UID", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
+        Book book = new Book("1234567890", "TITLE", "AUTHOR", "1900", "http://thumbnail.com", "A book");
+        when(mockBookService.getBookByIsbn(anyString())).thenReturn(book);
+        when(mockRepository.findById(anyString())).thenReturn(Optional.of(user));
+        when(mockRepository.save(any(User.class))).thenAnswer(a -> {
+            User savedUser = a.getArgument(0);
+            User newUser = new User(savedUser.getUid(), savedUser.getName(), savedUser.getEmail(), savedUser.getRegion(), savedUser.getThumbnail());
+            newUser.getBooks().addAll(savedUser.getBooks());
+            return newUser;
+        });
+
+        User updatedUser = userService.addBookToUser("UID", "1234567890");
+
+        assertAll(() -> assertFalse(updatedUser.getBooks().isEmpty()),
+                () -> assertEquals("TITLE", updatedUser.getBooks().getFirst().getTitle())
+        );
+    }
+
+    @Test
+    @DisplayName("addBookToUser throws NoSuchElementException when provided a UID that does not exist in database")
+    void test_addBookToUser_invalidUid() {
+        when(mockBookService.getBookByIsbn(anyString()))
+                .thenAnswer(a -> new Book("1234567890",
+                        "TITLE",
+                        "AUTHOR",
+                        "1900",
+                        "http://thumbnail.com",
+                        "A book"));
+        when(mockRepository.findById(anyString())).thenReturn(Optional.empty());
+
+        assertThrows(NoSuchElementException.class, () -> userService.addBookToUser("UID", "1234567890"));
+    }
+
+    @Test
+    @DisplayName("addBookToUser throws NoSuchElementException when provided an ISBN that cannot be retrieved")
+    void test_addBookToUser_invalidIsbn() {
+        when(mockBookService.getBookByIsbn(anyString())).thenThrow(NoSuchElementException.class);
+
+        assertThrows(NoSuchElementException.class, () -> userService.addBookToUser("UID", "1234567890"));
+    }
+
+    @Test
+    @DisplayName("addBookToUser throws EntityExistsException when book already exists in user library")
+    void test_addBookToUser_bookAlreadyPresent() {
+        User user = new User("UID", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
+        Book book = new Book("1234567890", "TITLE", "AUTHOR", "1900", "http://thumbnail.com", "A book");
+        user.getBooks().add(book);
+        when(mockBookService.getBookByIsbn(anyString())).thenReturn(book);
+        when(mockRepository.findById(anyString())).thenReturn(Optional.of(user));
+
+        assertThrows(EntityExistsException.class, () -> userService.addBookToUser("UID", "1234567890"));
     }
 
      // tests for REMOVE BOOK FROM USER
