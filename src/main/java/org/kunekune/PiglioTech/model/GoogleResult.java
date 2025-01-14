@@ -49,10 +49,7 @@ public record GoogleResult(int totalItems, GoogleBook[] items) {
             publishedDate = publishedDate.substring(0, 4);
         }
 
-        String description = volumeInfo.description;
-        description = (description == null) ? "No description provided" : description;
-//        👇 Removed during postgres testing for description length
-//        description = (description.length() > 255) ? description.substring(0, 251) + "..." : description;
+        String description = (volumeInfo.description == null) ? "No description provided" : volumeInfo.description;
 
         String thumbnail;
         ImageLinks links;
