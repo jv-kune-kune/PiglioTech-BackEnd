@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
 @Service
@@ -41,6 +42,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+HEAD
     public User addBookToUser(String id, String isbn) {
         // Dummy
         return new User("12345", "NAME", "EMAIL", Region.NORTH_WEST, "http://thumbnail.com/0");
@@ -49,5 +51,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public void removeBookFromUser(String userId, String isbn) {
         // Dummy
+
+    public void removeBookFromUser(String userId, String isbn) {
+        // Fetch the user
+        User user = repository.findById(userId).orElseThrow(() ->
+                new NoSuchElementException("User with ID " + userId + " not found")
+        );
+        boolean removed = user.getBooks().removeIf(book -> Objects.equals(book.getIsbn(), isbn));
+
+        // in case no book was removed, throw an exception
+        if (!removed) {
+            throw new IllegalArgumentException("Book with ISBN " + isbn + " not found in user's library");
+        }
+        repository.save(user);
+ 1e7ded0 (feat: implement test to remove book from users library)
     }
 }

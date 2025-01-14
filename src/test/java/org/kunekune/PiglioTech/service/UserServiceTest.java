@@ -2,6 +2,7 @@ package org.kunekune.PiglioTech.service;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.kunekune.PiglioTech.model.Book;
 import org.kunekune.PiglioTech.model.Region;
 import org.kunekune.PiglioTech.model.User;
 import org.kunekune.PiglioTech.repository.UserRepository;
@@ -16,7 +17,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @DataJpaTest
 class UserServiceTest {
@@ -171,4 +172,22 @@ class UserServiceTest {
 
         assertTrue((returnedUsers.isEmpty()));
     }
+
+    @Test
+    @DisplayName("removeBookFromUser successfully removes a book from the user's library")
+    void testRemoveBookFromUser_Success() {
+        // Arrange
+        User user = new User("user1", "John Doe", "john.doe@example.com", Region.NORTH_WEST, "http://thumbnail.com");
+        Book book = new Book("9781234567897", "Title", "Author", "2021", "http://thumbnail.com", "Description");
+        user.getBooks().add(book); // Add the book to the user's library
+
+        when(mockRepository.findById("user1")).thenReturn(Optional.of(user)); // Mock user retrieval
+
+        userService.removeBookFromUser("user1", "9781234567897");
+
+
+        assertTrue(user.getBooks().isEmpty(), "The book should be removed from the user's library"); // Validate book removal
+        verify(mockRepository, times(1)).save(user); // verify that the user was saved
+    }
+
 }
