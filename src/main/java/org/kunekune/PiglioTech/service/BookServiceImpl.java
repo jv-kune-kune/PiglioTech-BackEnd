@@ -36,5 +36,9 @@ public class BookServiceImpl implements BookService {
             return book;
         }
     }
-}
 
+    @Override
+    public boolean isValidIsbn(String isbn) {
+        return isbn != null && (isbn.length() == 10 || isbn.length() == 13) && isbn.matches("\\d+");
+    }
+}
