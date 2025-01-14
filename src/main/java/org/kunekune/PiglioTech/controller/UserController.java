@@ -32,9 +32,9 @@ public class UserController {
     }
 
     // get a user by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable String id) {
-        User user = userService.getUserByUid(id);
+    @GetMapping("/{uid}")
+    public ResponseEntity<User> getUserById(@PathVariable String uid) {
+        User user = userService.getUserByUid(uid);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
@@ -49,11 +49,11 @@ public class UserController {
     }
 
     // save a book to existing user
-    @PatchMapping("/{id}/book")
+    @PatchMapping("/{uid}/book")
     public ResponseEntity<Map<String, Object>> saveBookToUser(@PathVariable String uid, @RequestBody String isbn) {
         User updatedUser = userService.patchUserBooks(uid, isbn);
         return ResponseEntity.ok(Map.of(
-                "message", "Success. Book added to user.",
+                "message", "Book successfully added to user",
                 "user", updatedUser
         ));
     }
