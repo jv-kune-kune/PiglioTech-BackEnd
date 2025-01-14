@@ -1,5 +1,6 @@
 package org.kunekune.PiglioTech.controller;
 
+import org.kunekune.PiglioTech.model.IsbnDto;
 import org.kunekune.PiglioTech.model.Region;
 import org.kunekune.PiglioTech.model.User;
 import org.kunekune.PiglioTech.service.UserService;
@@ -41,6 +42,19 @@ public class UserController {
         }
         User savedUser = userService.saveUser(user);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/{id}/books")
+    public ResponseEntity<User> addBookToUser(@PathVariable String id, @RequestBody IsbnDto isbn) {
+        if (isbn.isbn() == null) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        User updatedUser = userService.addBookToUser(id, isbn.isbn());
+        return new ResponseEntity<>(updatedUser, HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/{id}/books/{isbn}")
+    public ResponseEntity<Void> removeBookFromUser(@PathVariable String id, @PathVariable String isbn) {
+        userService.removeBookFromUser(id, isbn);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
 

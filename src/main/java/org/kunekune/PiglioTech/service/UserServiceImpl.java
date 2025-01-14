@@ -39,4 +39,15 @@ public class UserServiceImpl implements UserService {
                 .forEach(users::add);
         return users;
     }
+
+    @Override
+    public User addBookToUser(String id, String isbn) {
+        // Dummy
+        return new User("12345", "NAME", "EMAIL", Region.NORTH_WEST, "http://thumbnail.com/0");
+    }
+
+    @Override
+    public void removeBookFromUser(String userId, String isbn) {
+        // Dummy
+    }
 }

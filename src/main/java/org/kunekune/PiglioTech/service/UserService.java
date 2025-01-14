@@ -11,4 +11,5 @@ public interface UserService {
     List<User> getUsersByRegion(Region region);
     List<User> getUsersByRegionExclude(Region region, String exclude);
     void removeBookFromUser(String userId, String isbn);
+    User addBookToUser(String id, String isbn);
 }
