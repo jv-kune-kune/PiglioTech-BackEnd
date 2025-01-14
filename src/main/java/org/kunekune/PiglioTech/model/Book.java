@@ -19,7 +19,7 @@ public class Book {
     private String publishedYear;
     @Column
     private String thumbnail;
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     public Book() {

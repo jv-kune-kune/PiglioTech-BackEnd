@@ -51,7 +51,8 @@ public record GoogleResult(int totalItems, GoogleBook[] items) {
 
         String description = volumeInfo.description;
         description = (description == null) ? "No description provided" : description;
-        description = (description.length() > 255) ? description.substring(0, 251) + "..." : description; // H2 varchars are size-limited
+//        👇 Removed during postgres testing for description length
+//        description = (description.length() > 255) ? description.substring(0, 251) + "..." : description;
 
         String thumbnail;
         ImageLinks links;
