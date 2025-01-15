@@ -64,13 +64,7 @@ public class UserServiceImpl implements UserService {
         if (!bookService.isValidIsbn(isbn))
             throw new IllegalArgumentException("Invalid ISBN: " + isbn);
 
-        Book book = bookRepository.findById(isbn).orElseGet(() -> {
-            Book fetchedBook = googleDao.fetchBookByIsbn(isbn);
-            if (fetchedBook != null)
-                bookService.saveBook(fetchedBook);
-            return fetchedBook;
-        });
-
+        Book book = bookService.getBookByIsbn(isbn);
         if (book == null)
             throw new IllegalArgumentException("Unable to fetch book with ISBN: " + isbn);
 
