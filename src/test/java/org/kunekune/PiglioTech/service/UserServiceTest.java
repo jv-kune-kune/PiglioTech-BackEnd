@@ -264,13 +264,13 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("removeBookFromUser throws IllegalArgumentException if the book is not in the user's library")
+    @DisplayName("removeBookFromUser throws NoSuchElementException if the book is not in the user's library")
     void testRemoveBookFromUser_BookNotFound() {
 
         User user = new User("user1", "John Doe", "john.doe@example.com", Region.NORTH_WEST, "http://thumbnail.com");
         when(mockRepository.findById("user1")).thenReturn(Optional.of(user)); // Mock user exists but has no books
 
-        assertThrows(IllegalArgumentException.class, () -> userService.removeBookFromUser("user1", "9781234567897"));
+        assertThrows(NoSuchElementException.class, () -> userService.removeBookFromUser("user1", "9781234567897"));
     }
 
 }

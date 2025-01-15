@@ -155,12 +155,43 @@ public class UserControllerTest {
 
 
 
+/*  commented test out as @ge-drei may want to repurpose test or handle get all users end point differently, tbd
     @Test
     @DisplayName("GET request with no parameters to /api/v1/users returns HTTP 400")
     void test_getRegion_noRegion() throws Exception {
         mockMvcController.perform(
                 MockMvcRequestBuilders.get(endpoint)
         ).andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }*/
+
+    @Test
+    @DisplayName("GET request with no parameters to /api/v1/users returns all users with HTTP 200")
+    void test_getAllUsers_noParameters() throws Exception {
+        List<User> users = List.of(
+                new User("1", "Alice", "alice@example.com", Region.NORTH_WEST, "http://example.com/thumbnail1.jpg"),
+                new User("2", "Bob", "bob@example.com", Region.SOUTH_EAST, "http://example.com/thumbnail2.jpg")
+        );
+
+        when(mockService.getAllUsers()).thenReturn(users);
+
+        mockMvcController.perform(
+                        MockMvcRequestBuilders.get(endpoint)
+                ).andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].uid").value(users.get(0).getUid()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].name").value(users.get(0).getName()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].uid").value(users.get(1).getUid()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].name").value(users.get(1).getName()));
+    }
+
+    @Test
+    @DisplayName("GET request to /api/v1/users returns empty list and HTTP 200 when no users are found")
+    void test_getAllUsers_emptyList() throws Exception {
+        when(mockService.getAllUsers()).thenReturn(List.of());
+
+        mockMvcController.perform(
+                        MockMvcRequestBuilders.get(endpoint)
+                ).andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(0)));
     }
 
     @Test
