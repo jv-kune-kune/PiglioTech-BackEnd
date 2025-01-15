@@ -1,10 +1,14 @@
 package org.kunekune.PiglioTech.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.kunekune.PiglioTech.exception.GlobalExceptionHandler;
+import org.kunekune.PiglioTech.model.Book;
+import org.kunekune.PiglioTech.model.IsbnDto;
 import org.kunekune.PiglioTech.model.Region;
 import org.kunekune.PiglioTech.model.User;
 import org.kunekune.PiglioTech.service.UserService;
@@ -21,9 +25,10 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 public class UserControllerTest {
@@ -150,12 +155,43 @@ public class UserControllerTest {
 
 
 
+/*  commented test out as @ge-drei may want to repurpose test or handle get all users end point differently, tbd
     @Test
     @DisplayName("GET request with no parameters to /api/v1/users returns HTTP 400")
     void test_getRegion_noRegion() throws Exception {
         mockMvcController.perform(
                 MockMvcRequestBuilders.get(endpoint)
         ).andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }*/
+
+    @Test
+    @DisplayName("GET request with no parameters to /api/v1/users returns all users with HTTP 200")
+    void test_getAllUsers_noParameters() throws Exception {
+        List<User> users = List.of(
+                new User("1", "Alice", "alice@example.com", Region.NORTH_WEST, "http://example.com/thumbnail1.jpg"),
+                new User("2", "Bob", "bob@example.com", Region.SOUTH_EAST, "http://example.com/thumbnail2.jpg")
+        );
+
+        when(mockService.getAllUsers()).thenReturn(users);
+
+        mockMvcController.perform(
+                        MockMvcRequestBuilders.get(endpoint)
+                ).andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].uid").value(users.get(0).getUid()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].name").value(users.get(0).getName()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].uid").value(users.get(1).getUid()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].name").value(users.get(1).getName()));
+    }
+
+    @Test
+    @DisplayName("GET request to /api/v1/users returns empty list and HTTP 200 when no users are found")
+    void test_getAllUsers_emptyList() throws Exception {
+        when(mockService.getAllUsers()).thenReturn(List.of());
+
+        mockMvcController.perform(
+                        MockMvcRequestBuilders.get(endpoint)
+                ).andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(0)));
     }
 
     @Test
@@ -217,5 +253,86 @@ public class UserControllerTest {
                         .param("region", "north_west")
                         .param("exclude", "UID_3")
         ).andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+
+
+    @Test
+    @DisplayName("POST request to /api/v1/users/{id}/books with valid user ID and valid request body returns updated user details and HTTP 201")
+    void test_addBookToUser_validUser_validIsbn() throws Exception {
+        User user = new User("98765", "NAME", "EMAIL", Region.NORTH_WEST, "http://thumbnail.com/0");
+        Book book = new Book("1234567890", "TITLE", "AUTHOR", "1900", "http://thumbnail.com/1", "A book");
+        String isbn = mapper.writeValueAsString(new IsbnDto("1234567890"));
+        when(mockService.addBookToUser(anyString(), anyString())).thenAnswer(a -> {
+            user.getBooks().add(book);
+            return user;
+        });
+
+        mockMvcController.perform(
+                MockMvcRequestBuilders.post(endpoint + "/98765/books")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(isbn)
+        ).andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.books", hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.books[0].isbn").value(book.getIsbn()));
+    }
+
+    @Test
+    @DisplayName("POST request to /api/v1/users/{id}/books with invalid user ID returns HTTP 404")
+    void test_addBookToUser_invalidUser() throws Exception {
+        String isbn = mapper.writeValueAsString(new IsbnDto("1234567890"));
+
+        when(mockService.addBookToUser(anyString(), anyString())).thenThrow(NoSuchElementException.class);
+
+        mockMvcController.perform(
+                MockMvcRequestBuilders.post(endpoint + "/12345/books")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(isbn)
+        ).andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("POST request to /api/v1/users/{id}/books with invalid request body returns HTTP 400")
+    void test_addBookToUser_invalidContent() throws Exception {
+        String isbn = "{\"not-isbn\": \"1234567890\"}";
+
+        mockMvcController.perform(
+                MockMvcRequestBuilders.post(endpoint + "/12345/books")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(isbn)
+        ).andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("POST request to /api/v1/users/{id}/books with ISBN already associated with user returns HTTP 409")
+    void test_addBookToUser_conflictingIsbns() throws Exception {
+        String isbn = mapper.writeValueAsString(new IsbnDto("1234567890"));
+        when(mockService.addBookToUser(anyString(), anyString())).thenThrow(EntityExistsException.class);
+
+        mockMvcController.perform(
+                MockMvcRequestBuilders.post(endpoint + "/98765/books")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(isbn)
+        ).andExpect(MockMvcResultMatchers.status().isConflict());
+    }
+
+    @Test
+    @DisplayName("DELETE request to /api/v1/users/{id}/books/{isbn} with valid user ID and valid ISBN returns HTTP 204")
+    void test_removeBookFromUser_validRequest() throws Exception {
+        doNothing().when(mockService).removeBookFromUser(anyString(), anyString());
+
+        mockMvcController.perform(
+                MockMvcRequestBuilders.delete(endpoint + "/12345/books/1234567890")
+        ).andExpect(MockMvcResultMatchers.status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("DELETE request to /api/v1/users/{id}/books/{isbn} with either invalid user ID or ISBN returns HTTP 404")
+    void test_removeBookFromUser_invalidIds() throws Exception {
+        doThrow(NoSuchElementException.class).when(mockService).removeBookFromUser(anyString(), anyString());
+
+        mockMvcController.perform(
+                MockMvcRequestBuilders.delete(endpoint + "/12345/books/1234567890")
+        ).andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 }
