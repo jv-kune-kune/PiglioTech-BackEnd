@@ -7,10 +7,8 @@ import org.springframework.stereotype.Service;
 
 
 import org.kunekune.PiglioTech.model.Book;
-import reactor.core.publisher.Mono;
 
-import java.util.NoSuchElementException;
-import java.util.concurrent.CompletableFuture;
+import java.util.List;
 
 @Service
 public class BookServiceImpl implements BookService {
@@ -27,6 +25,9 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    public List<Book> getAllBooks() {return  repository.findAll(); }
+
+    @Override
     public Book getBookByIsbn(String isbn) {
         if (repository.existsById(isbn)) {
             return repository.findById(isbn).get(); // Confirmed to exist
@@ -36,5 +37,9 @@ public class BookServiceImpl implements BookService {
             return book;
         }
     }
-}
 
+    @Override
+    public boolean isValidIsbn(String isbn) {
+        return isbn != null && (isbn.length() == 10 || isbn.length() == 13) && isbn.matches("\\d+");
+    }
+}
