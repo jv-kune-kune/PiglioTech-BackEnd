@@ -17,6 +17,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -84,14 +85,14 @@ public class SwapServiceTest {
     }
 
     @Test
-    @DisplayName("deleteSwap throws IllegalArgumentException if the swap does not exist")
+    @DisplayName("deleteSwap throws NoSuchElementException if the swap does not exist")
     void testDeleteSwap_nonExistentSwap() {
 
         Long swapId = 1L;
         when(mockRepository.existsById(swapId)).thenReturn(false);
 
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(NoSuchElementException.class, () -> {
             swapService.deleteSwap(swapId);
         });
 
