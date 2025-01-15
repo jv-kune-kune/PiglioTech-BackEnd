@@ -34,6 +34,8 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
+    public List<User> getAllUsers() { return userRepository.findAll(); }
+
     @Override
     public User getUserByUid(String uid) {
         return userRepository.findById(uid).orElseThrow();

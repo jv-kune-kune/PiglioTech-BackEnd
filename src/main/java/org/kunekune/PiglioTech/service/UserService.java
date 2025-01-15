@@ -9,6 +9,7 @@ import java.util.Map;
 public interface UserService {
     User saveUser(User user);
     User getUserByUid(String uid);
+    List<User> getAllUsers();
     List<User> getUsersByRegion(Region region);
     List<User> getUsersByRegionExclude(Region region, String exclude);
     User patchUserBooks (String uid, String isbn);
