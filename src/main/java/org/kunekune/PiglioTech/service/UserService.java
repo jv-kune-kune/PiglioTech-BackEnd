@@ -12,6 +12,7 @@ public interface UserService {
     List<User> getAllUsers();
     List<User> getUsersByRegion(Region region);
     List<User> getUsersByRegionExclude(Region region, String exclude);
-    User patchUserBooks (String uid, String isbn);
     User updateUserDetails(String uid, Map<String, Object> updates);    boolean isValidUser(User user);
+    void removeBookFromUser(String userId, String isbn);
+    User addBookToUser(String id, String isbn);
 }

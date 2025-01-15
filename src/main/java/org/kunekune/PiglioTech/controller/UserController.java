@@ -1,5 +1,6 @@
 package org.kunekune.PiglioTech.controller;
 
+import org.kunekune.PiglioTech.model.IsbnDto;
 import org.kunekune.PiglioTech.model.Region;
 import org.kunekune.PiglioTech.model.User;
 import org.kunekune.PiglioTech.service.BookService;
@@ -52,16 +53,19 @@ public class UserController {
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
 
-    // save a book to existing user
-    @PatchMapping("/{uid}/book")
-    public ResponseEntity<Map<String, Object>> saveBookToUser(@PathVariable String uid, @RequestBody String isbn) {
-        User updatedUser = userService.patchUserBooks(uid, isbn);
-        return ResponseEntity.ok(Map.of(
-                "message", "Book successfully added to user",
-                "user", updatedUser
-        ));
+    @PostMapping("/{id}/books")
+    public ResponseEntity<User> addBookToUser(@PathVariable String id, @RequestBody IsbnDto isbn) {
+        if (isbn.isbn() == null) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        User updatedUser = userService.addBookToUser(id, isbn.isbn());
+        return new ResponseEntity<>(updatedUser, HttpStatus.CREATED);
     }
 
+    @DeleteMapping("/{id}/books/{isbn}")
+    public ResponseEntity<Void> removeBookFromUser(@PathVariable String id, @PathVariable String isbn) {
+        userService.removeBookFromUser(id, isbn);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+  
     // update partial user details
     @PatchMapping("/{uid}")
     public ResponseEntity<Map<String, Object>> updateUserDetails(

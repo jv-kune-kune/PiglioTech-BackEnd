@@ -1,5 +1,6 @@
 package org.kunekune.PiglioTech.exception;
 
+import jakarta.persistence.EntityExistsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -34,5 +35,10 @@ public class GlobalExceptionHandler {
                 "error", "Validation Error",
                 "message", e.getMessage()
         ));
+    }
+
+    @ExceptionHandler(EntityExistsException.class)
+    public ResponseEntity<String> handleEntityConflict(EntityExistsException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
     }
 }
