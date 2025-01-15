@@ -4,7 +4,6 @@ import jakarta.persistence.EntityExistsException;
 import org.kunekune.PiglioTech.model.Book;
 import org.kunekune.PiglioTech.model.Region;
 import org.kunekune.PiglioTech.model.User;
-import org.kunekune.PiglioTech.repository.BookRepository;
 import org.kunekune.PiglioTech.repository.GoogleBooksDAO;
 import org.kunekune.PiglioTech.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,13 +22,7 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
     @Autowired
-    private BookRepository bookRepository;
-
-    @Autowired
     private GoogleBooksDAO googleDao;
-
-    @Autowired
-    private BookService bookService;
 
     @Autowired
     private BookService bookService;
@@ -103,19 +96,19 @@ public class UserServiceImpl implements UserService {
 
     public User addBookToUser(String id, String isbn) {
         Book book = bookService.getBookByIsbn(isbn);
-        User user = repository.findById(id).orElseThrow();
+        User user = userRepository.findById(id).orElseThrow();
         if (user.getBooks().contains(book)) {
             throw new EntityExistsException("User already owns book");
         }
         user.getBooks().add(book);
-        return repository.save(user);
+        return userRepository.save(user);
     }
 
     @Override
     public void removeBookFromUser(String userId, String isbn) {
         {
             // get the user
-            User user = repository.findById(userId).orElseThrow(() ->
+            User user = userRepository.findById(userId).orElseThrow(() ->
                     new NoSuchElementException("User with ID " + userId + " not found")
             );
             boolean removed = user.getBooks().removeIf(book -> Objects.equals(book.getIsbn(), isbn));
@@ -124,7 +117,7 @@ public class UserServiceImpl implements UserService {
             if (!removed) {
                 throw new NoSuchElementException("Book with ISBN " + isbn + " not found in user's library");
             }
-            repository.save(user);
+            userRepository.save(user);
 
         }
     }
