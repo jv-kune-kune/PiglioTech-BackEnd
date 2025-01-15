@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import org.kunekune.PiglioTech.model.Book;
 
+import java.util.List;
+
 @Service
 public class BookServiceImpl implements BookService {
 
@@ -21,6 +23,9 @@ public class BookServiceImpl implements BookService {
     public Book saveBook(Book book) {
         return repository.save(book);
     }
+
+    @Override
+    public List<Book> getAllBooks() {return  repository.findAll(); }
 
     @Override
     public Book getBookByIsbn(String isbn) {
