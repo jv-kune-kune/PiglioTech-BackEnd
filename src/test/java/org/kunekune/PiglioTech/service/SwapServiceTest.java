@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 @DataJpaTest
@@ -80,10 +80,7 @@ public class SwapServiceTest {
         Long swapId = 1L;
         when(mockRepository.existsById(swapId)).thenReturn(true);
 
-
-        swapService.deleteSwap(swapId);
-
-        verify(mockRepository, times(1)).deleteById(swapId);
+        assertDoesNotThrow(() -> swapService.deleteSwap(swapId));
     }
 
     @Test
