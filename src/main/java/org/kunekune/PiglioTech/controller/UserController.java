@@ -23,13 +23,17 @@ public class UserController {
     private BookService bookService;
 
     @GetMapping()
-    public ResponseEntity<List<User>> getUsersByRegion(@RequestParam(required = true) Region region, @RequestParam(required = false) String exclude) {
-        if (exclude != null) {
-            return new ResponseEntity<>(userService.getUsersByRegionExclude(region, exclude), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(userService.getUsersByRegion(region), HttpStatus.OK);
+    public ResponseEntity<List<User>> getUsersByRegion(@RequestParam(required = false) Region region, @RequestParam(required = false) String exclude) {
+        if (region != null) {
+            if (exclude != null) {
+                return new ResponseEntity<>(userService.getUsersByRegionExclude(region, exclude), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(userService.getUsersByRegion(region), HttpStatus.OK);
+            }
         }
+        return new ResponseEntity<>(userService.getAllUsers(), HttpStatus.OK);
     }
+
 
     // get a user by ID
     @GetMapping("/{uid}")
@@ -70,5 +74,4 @@ public class UserController {
                 "user", updatedUser
         ));
     }
-
 }
