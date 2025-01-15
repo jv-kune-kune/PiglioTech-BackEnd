@@ -1,0 +1,79 @@
+name: Update Estimate Based on Size
+
+on:
+  issues:
+    types: [opened, labeled, edited, reopened]
+  schedule:
+    - cron: "0 23 * * *" # Run daily at 11 PM
+
+jobs:
+  set-estimate:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Delay for newly opened issues
+      - name: Add delay for issue opened
+        if: ${{ github.event_name == 'issues' && github.event.action == 'opened' }}
+        run: |
+          echo "Delaying for 5 minutes..."
+          sleep 300 # Delay for 300 seconds (5 minutes)
+
+      # Step 2: Fetch Size and Estimate Fields
+      - name: Get Fields
+        uses: EndBug/project-fields@v2
+        with:
+          operation: get
+          fields: Size,Estimate
+          github_token: ${{ secrets.PAT_SECRET }}
+          project_url: https://github.com/orgs/jv-kune-kune/projects/1
+        id: get-fields
+
+      # Step 3: Check Field Values and Exit Gracefully if Empty
+      - name: Validate Fields
+        id: validate-fields
+        run: |
+          echo "Fields: ${{ steps.get-fields.outputs.values }}"
+          if [[ "${{ steps.get-fields.outputs.values }}" == ',' ]]; then
+            echo "Fields are empty. Exiting gracefully."
+            exit 0
+          fi
+
+      # Step 4: Determine Estimate Value
+      - name: Determine Estimate
+        id: determine-estimate
+        run: |
+          size=$(echo "${{ steps.get-fields.outputs.values }}" | cut -d',' -f1)
+          estimate=$(echo "${{ steps.get-fields.outputs.values }}" | cut -d',' -f2)
+          
+          echo "Size: $size"
+          echo "Estimate: $estimate"
+
+          # Map size to estimate value
+          case "$size" in
+            "XXS") value="0" ;;
+            "XS") value="1" ;;
+            "S") value="2" ;;
+            "M") value="3" ;;
+            "L") value="8" ;;
+            "XL") value="13" ;;
+            "XXL") value="21" ;;
+            *) value="Unknown" ;;
+          esac
+
+          # Only proceed if Estimate field is empty
+          if [[ -n "$estimate" ]]; then
+            echo "Estimate already set to $estimate. No changes needed."
+            exit 0
+          fi
+
+          echo "value=$value" >> $GITHUB_ENV
+
+      # Step 5: Set Estimate Field
+      - name: Set Estimate
+        if: ${{ env.value != 'Unknown' }}
+        uses: EndBug/project-fields@v2
+        with:
+          operation: set
+          fields: Estimate
+          github_token: ${{ secrets.PAT_SECRET }}
+          project_url: https://github.com/orgs/jv-kune-kune/projects/1
+          values: ${{ env.value }}

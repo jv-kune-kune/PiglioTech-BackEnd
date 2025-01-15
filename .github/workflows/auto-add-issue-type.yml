@@ -1,0 +1,71 @@
+name: Assign Issue Type Field Based on Title
+
+on:
+  issues:
+    types: [labeled, unlabeled, edited, reopened]
+  pull_request:
+    types: [labeled, unlabeled, edited, reopened]
+
+jobs:
+  assign-fields:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Extract title
+      - name: Extract Title
+        id: extract-title
+        run: |
+          if [ "${{ github.event_name }}" == "issues" ]; then
+            echo "title=${{ github.event.issue.title }}" >> $GITHUB_ENV
+          elif [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "title=${{ github.event.pull_request.title }}" >> $GITHUB_ENV
+          fi
+
+      # Step 2: Determine Field Value
+      - name: Determine Field
+        id: determine-field
+        run: |
+          case "$(echo "${{ env.title }}" | tr '[:upper:]' '[:lower:]')" in
+            feat:*) echo "field=feature 🛠" >> $GITHUB_ENV ;;
+            fix:*) echo "field=bug fix 🐛" >> $GITHUB_ENV ;;
+            docs:*) echo "field=documentation 📝" >> $GITHUB_ENV ;;
+            chore:*) echo "field=chore 🧹" >> $GITHUB_ENV ;;
+            test:*) echo "field=testing ✅" >> $GITHUB_ENV ;;
+            perf:*) echo "field=performance 🏎" >> $GITHUB_ENV ;;
+            style:*) echo "field=style 🎨" >> $GITHUB_ENV ;;
+            refactor:*) echo "field=refactor ♻️" >> $GITHUB_ENV ;;
+            ci:*) echo "field=ci/cd ⚙️" >> $GITHUB_ENV ;;
+            build:*) echo "field=build 🏗️" >> $GITHUB_ENV ;;
+            revert:*) echo "field=revert 🔄" >> $GITHUB_ENV ;;
+            *) echo "field=unknown" >> $GITHUB_ENV ;; # Default case if no keyword is matched
+          esac
+
+      # Step 3: Fetch Current Field Value
+      - name: Get Current Field Value
+        id: get-field
+        uses: EndBug/project-fields@v2
+        with:
+          operation: get
+          fields: Issue Type
+          github_token: ${{ secrets.PAT_SECRET }}
+          project_url: https://github.com/orgs/jv-kune-kune/projects/1
+
+      # Step 4: Update Field If Empty
+      - name: Update Field If Empty
+        if: ${{ steps.get-field.outputs.values == '' }} # Only update if the field is empty
+        uses: EndBug/project-fields@v2
+        with:
+          operation: set
+          fields: Issue Type
+          github_token: ${{ secrets.PAT_SECRET }}
+          project_url: https://github.com/orgs/jv-kune-kune/projects/1
+          values: ${{ env.field }}
+
+      # Step 5: Log a Notification if Field Was Updated
+      - name: Log Notification for Field Update
+        if: ${{ steps.get-field.outputs.values == '' }}
+        run: echo "::notice title=Field Updated::The Issue Type field was set to '${{ env.field }}'."
+
+      # Step 6: Log a Warning if Field and Title Conflict
+      - name: Notify Conflict
+        if: ${{ steps.get-field.outputs.values != '' && steps.get-field.outputs.values != env.field }}
+        run: echo "::warning title=Field Conflict::The field is set to '${{ steps.get-field.outputs.values }}', but the title suggests '${{ env.field }}'. Please manually resolve this."

@@ -1,0 +1,56 @@
+name: Add Start Date to Issues on Status Change
+
+on:
+  issues:
+    types: [opened, labeled, edited, reopened]
+  schedule:
+    - cron: "0 23 * * *" # Run daily at 11 PM
+
+jobs:
+  update-start-date:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Delay for newly opened issues
+      - name: Add delay for issue opened
+        if: ${{ github.event_name == 'issues' && github.event.action == 'opened' }}
+        run: |
+          echo "Delaying for 5 minutes..."
+          sleep 300 # Delay for 300 seconds (5 minutes)
+
+      # Step 2: Get Issue Fields
+      - name: Get Issue Fields
+        id: get-fields
+        uses: EndBug/project-fields@v2
+        with:
+          operation: get
+          fields: Status,Start date
+          github_token: ${{ secrets.PAT_SECRET }}
+          project_url: https://github.com/orgs/jv-kune-kune/projects/1
+
+      # Step 3: Check and Set Start Date for In Progress
+      - name: Check and Set Start Date
+        run: |
+          status=$(echo "${{ steps.get-fields.outputs.values }}" | cut -d',' -f1)
+          start_date=$(echo "${{ steps.get-fields.outputs.values }}" | cut -d',' -f2)
+
+          echo "Status: $status"
+          echo "Start Date: $start_date"
+
+          if [[ "$status" == "In progress" && -z "$start_date" ]]; then
+            today=$(date +%Y-%m-%d)
+            echo "Detected move to 'In Progress'. Setting Start Date to $today."
+            echo "value=$today" >> $GITHUB_ENV
+          else
+            echo "No updates needed."
+          fi
+
+      # Step 4: Set Start Date Field
+      - name: Set Start Date Field
+        if: ${{ env.value }}
+        uses: EndBug/project-fields@v2
+        with:
+          operation: set
+          fields: Start date
+          github_token: ${{ secrets.PAT_SECRET }}
+          project_url: https://github.com/orgs/jv-kune-kune/projects/1
+          values: ${{ env.value }}

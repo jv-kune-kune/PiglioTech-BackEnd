@@ -1,0 +1,16 @@
+name: Add Project Management Label
+
+on:
+  issues:
+    types:
+      - opened
+
+jobs:
+  add-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add Label to Issue
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.PAT_SECRET }}
+          labels: "👥 project management 📋"
