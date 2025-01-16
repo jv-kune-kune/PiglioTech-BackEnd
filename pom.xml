@@ -185,6 +185,13 @@
 				</dependencies>
 			</plugin>
 
+			<!-- Maven Site Plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>3.12.1</version> <!-- or a newer stable version -->
+			</plugin>
+
 			<!-- Sonar Maven Plugin -->
 			<plugin>
 				<groupId>org.sonarsource.scanner.maven</groupId>
