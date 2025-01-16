@@ -1,6 +1,6 @@
 package org.kunekune.PiglioTech.controller;
 
-import org.kunekune.PiglioTech.model.Swap;
+import org.kunekune.PiglioTech.model.*;
 import org.kunekune.PiglioTech.service.SwapService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,15 +17,21 @@ public class SwapController {
     private SwapService swapService;
 
     @GetMapping
-    public ResponseEntity<List<Swap>> getSwaps(@RequestParam String userId) {
-        List<Swap> swaps = swapService.getSwaps(userId);
-        return new ResponseEntity<>(swaps, HttpStatus.OK);
+    public ResponseEntity<List<MatchDto>> getSwaps(@RequestParam String userId) {
+        List<MatchDto> matches = swapService.getMatches(userId);
+        return new ResponseEntity<>(matches, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<Swap> createSwap(@RequestBody Swap swap) {
-        Swap createdSwap = swapService.createSwap(swap);
+    public ResponseEntity<SwapRequest> createSwap(@RequestBody SwapRequestDto dto) {
+        SwapRequest createdSwap = swapService.makeSwapRequest(dto);
         return new ResponseEntity<>(createdSwap, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/dismiss")
+    public ResponseEntity<Void> dismissSwap(@RequestBody SwapDismissal dismissal) {
+        swapService.dismissSwap(dismissal);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping("/{id}")
