@@ -164,19 +164,20 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
 				<version>3.6.0</version>
-				<dependencies>
-					<dependency>
-						<groupId>com.puppycrawl.tools</groupId>
-						<artifactId>checkstyle</artifactId>
-						<version>10.14.1</version> <!-- Known working version -->
-					</dependency>
-				</dependencies>
 				<configuration>
-					<configLocation>checkstyle.xml</configLocation>
-					<failOnViolation>false</failOnViolation>
-					<outputFile>target/checkstyle-result.xml</outputFile>
-					<outputFileFormat>xml</outputFileFormat>
+					<!-- Use the default Checkstyle configuration -->
+					<failOnViolation>false</failOnViolation> <!-- Do not fail the build -->
+					<outputFile>target/checkstyle-result.html</outputFile> <!-- Export results as HTML -->
+					<outputFileFormat>plain</outputFileFormat> <!-- Use 'plain' for HTML report generation -->
 				</configuration>
+				<executions>
+					<execution>
+						<phase>verify</phase> <!-- Run during the verify phase -->
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.sonarsource.scanner.maven</groupId>
