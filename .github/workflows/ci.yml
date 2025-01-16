@@ -58,18 +58,18 @@ jobs:
           -Dsonar.projectKey=jv-kune-kune_PiglioTech-BackEnd \
           -Dsonar.organization=jv-kune-kune \
           -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
 
       # Step 6: Generate JaCoCo Coverage Report
       - name: Upload JaCoCo Coverage Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jacoco-coverage-report
           path: target/site/jacoco/
 
       # Step 7: Perform CodeQL Analysis
       - name: Perform CodeQL Analysis (Initialization)
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: java
 
@@ -79,14 +79,14 @@ jobs:
           mvn clean verify
 
       - name: Perform CodeQL Analysis (Scan)
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
 
       # Step 8: Static Code Analysis with Checkstyle
       - name: Generate Checkstyle Report
         run: mvn checkstyle:checkstyle
 
       - name: Upload Checkstyle Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: checkstyle-report
           path: target/site/checkstyle.html
