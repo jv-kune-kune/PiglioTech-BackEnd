@@ -55,6 +55,11 @@ jobs:
         with:
           languages: java
 
+      - name: Build Project for CodeQL
+        run: |
+          export CODEQL_EXTRACTOR_JAVA_TRACER_LOG_LEVEL=INFO
+          mvn clean verify
+
       - name: Perform CodeQL Analysis (Scan)
         uses: github/codeql-action/analyze@v2
 
