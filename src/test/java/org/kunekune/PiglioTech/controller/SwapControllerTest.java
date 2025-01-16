@@ -90,10 +90,9 @@ class SwapControllerTest {
         when(mockSwapService.getMatches(anyString())).thenReturn(List.of());
 
         mockMvcController.perform(
-                        MockMvcRequestBuilders.get(endpoint)
-                ).andExpect(MockMvcResultMatchers.status().isBadRequest());
+                MockMvcRequestBuilders.get(endpoint)
+        ).andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
-
 
 
     @Test
@@ -113,9 +112,9 @@ class SwapControllerTest {
         });
 
         mockMvcController.perform(
-                    MockMvcRequestBuilders.post(endpoint)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(dtoBody)
+                        MockMvcRequestBuilders.post(endpoint)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(dtoBody)
                 ).andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.initiator").exists())
@@ -133,10 +132,10 @@ class SwapControllerTest {
         when(mockSwapService.makeSwapRequest(any(SwapRequestDto.class))).thenThrow(EntityExistsException.class);
 
         mockMvcController.perform(
-                        MockMvcRequestBuilders.post(endpoint)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(dtoBody)
-                ).andExpect(MockMvcResultMatchers.status().isConflict());
+                MockMvcRequestBuilders.post(endpoint)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(dtoBody)
+        ).andExpect(MockMvcResultMatchers.status().isConflict());
     }
 
     @Test
@@ -153,4 +152,64 @@ class SwapControllerTest {
                         .content(dtoBody)
         ).andExpect(MockMvcResultMatchers.status().isNotFound());
     }
+
+
+    // tests for SwapRequestDto
+    @Test
+    @DisplayName("POST request to /api/v1/swaps with invalid SwapRequestDto returns HTTP 400")
+    void test_createSwap_invalidFields() throws Exception {
+        // Invalid DTO with empty fields
+        SwapRequestDto invalidDto = new SwapRequestDto("", "", "");
+        String invalidDtoJson = mapper.writeValueAsString(invalidDto);
+
+        mockMvcController.perform(MockMvcRequestBuilders.post("/api/v1/swaps")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidDtoJson))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("POST request to /api/v1/swaps with duplicate SwapRequestDto returns HTTP 409")
+    void test_createSwap_duplicateRequest() throws Exception {
+        SwapRequestDto duplicateDto = new SwapRequestDto("UID_1", "UID_2", "ISBN_123");
+        String duplicateDtoJson = mapper.writeValueAsString(duplicateDto);
+
+        when(mockSwapService.makeSwapRequest(any(SwapRequestDto.class))).thenThrow(EntityExistsException.class);
+
+        mockMvcController.perform(MockMvcRequestBuilders.post("/api/v1/swaps")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(duplicateDtoJson))
+                .andExpect(MockMvcResultMatchers.status().isConflict());
+    }
+
+    @Test
+    @DisplayName("POST request to /api/v1/swaps with valid SwapRequestDto returns HTTP 201")
+    void test_createSwap_valid() throws Exception {
+        SwapRequestDto validDto = new SwapRequestDto("UID_1", "UID_2", "ISBN_123");
+        String validDtoJson = mapper.writeValueAsString(validDto);
+
+        when(mockSwapService.makeSwapRequest(any(SwapRequestDto.class))).thenAnswer(a -> {
+            SwapRequest request = new SwapRequest(
+                    new User("UID_1", "NAME 1", "EMAIL 1", Region.NORTH_WEST, "http://thumbnail.com/1"),
+                    new User("UID_2", "NAME 2", "EMAIL 2", Region.NORTH_WEST, "http://thumbnail.com/2"),
+                    new Book("ISBN_123", "TITLE 1", "AUTHOR 1", "2000", "http://thumbnail.com/book1", "Description")
+            );
+            request.setId(1L);
+            return request;
+        });
+
+        mockMvcController.perform(MockMvcRequestBuilders.post("/api/v1/swaps")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(validDtoJson))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.initiator").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.receiver").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.receiverBook").exists());
+    }
+
 }
+
+
+
+

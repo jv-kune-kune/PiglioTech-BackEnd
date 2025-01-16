@@ -1,5 +1,6 @@
 package org.kunekune.PiglioTech.controller;
 
+import jakarta.validation.Valid;
 import org.kunekune.PiglioTech.model.*;
 import org.kunekune.PiglioTech.service.SwapService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ public class SwapController {
     }
 
     @PostMapping
-    public ResponseEntity<SwapRequest> createSwap(@RequestBody SwapRequestDto dto) {
+    public ResponseEntity<SwapRequest> createSwap(@RequestBody @Valid SwapRequestDto dto) {
         SwapRequest createdSwap = swapService.makeSwapRequest(dto);
         return new ResponseEntity<>(createdSwap, HttpStatus.CREATED);
     }
