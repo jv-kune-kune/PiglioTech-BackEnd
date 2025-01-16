@@ -24,6 +24,7 @@ import java.util.NoSuchElementException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -130,7 +131,8 @@ class SwapControllerTest {
         SwapRequestDto dto = new SwapRequestDto("UID_1", "UID_2", "12345");
         String dtoBody = mapper.writeValueAsString(dto);
 
-        when(mockSwapService.makeSwapRequest(any(SwapRequestDto.class))).thenThrow(EntityExistsException.class);
+        doThrow(new EntityExistsException("Identical swap request has already been made"))
+                .when(mockSwapService).makeSwapRequest(any(SwapRequestDto.class));
 
         mockMvcController.perform(
                         MockMvcRequestBuilders.post(endpoint)
