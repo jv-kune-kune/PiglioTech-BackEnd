@@ -25,7 +25,16 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      # Step 3: Cache Maven dependencies
+      # Step 3: Cache SonarQube packages
+      - name: Cache SonarQube packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: |
+            ${{ runner.os }}-sonar
+
+      # Step 4: Cache Maven dependencies
       - name: Cache Maven dependencies
         uses: actions/cache@v3
         with:
@@ -34,13 +43,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      # Step 4: Build the Project
-      - name: Build with Maven
-        run: mvn clean verify
-
-      # Step 5: Run Unit Tests
-      - name: Run Unit Tests
-        run: mvn test
+      # Step 5: Build and Analyze with Maven
+      - name: Build and Analyze with SonarCloud
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn clean verify \
+          org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.projectKey=jv-kune-kune_PiglioTech-BackEnd \
+          -Dsonar.organization=jv-kune-kune \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
       # Step 6: Generate JaCoCo Coverage Report
       - name: Upload JaCoCo Coverage Report
@@ -73,16 +86,7 @@ jobs:
           name: checkstyle-report
           path: target/site/checkstyle.html
 
-      # Step 9: SonarCloud Analysis
-      - name: SonarCloud Analysis
-        uses: sonarsource/sonarcloud-github-action@v2
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectKey: jv-kune-kune_PiglioTech-BackEnd
-          organization: jv-kune-kune
-
-      # Step 10: Dependency Review
+      # Step 9: Dependency Review
       - name: Dependency Review
         uses: actions/dependency-review-action@v2
         with:
