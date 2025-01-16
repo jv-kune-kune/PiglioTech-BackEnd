@@ -50,8 +50,32 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      # Step 5: Build and Analyze with Maven
-      - name: Build and Analyze with SonarCloud
+      # Step 5: Run Spotless Check
+      - name: Run Spotless Check
+        run: mvn spotless:check
+
+      # Step 6: Static Code Analysis with Checkstyle (Non-failing)
+      - name: Generate Maven Site (includes Checkstyle HTML)
+        run: mvn clean site
+
+      - name: Upload Checkstyle Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkstyle-report
+          path: target/site/checkstyle.html
+
+      # Step 7: Run SpotBugs (Non-failing)
+      - name: Run SpotBugs
+        run: |
+          mvn spotbugs:spotbugs
+      - name: Upload SpotBugs Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: spotbugs-report
+          path: target/spotbugsXml.xml
+
+      # Step 8: Build and Analyze with Maven
+      - name: Build, Test, and Analyze with SonarCloud
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
@@ -60,18 +84,19 @@ jobs:
           -Dsonar.projectKey=jv-kune-kune_PiglioTech-BackEnd \
           -Dsonar.organization=jv-kune-kune \
           -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-          -Dsonar.login=${{ secrets.SONAR_TOKEN
-          -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml }}
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+          -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml \
+          -Dsonar.java.spotbugs.reportPaths=target/spotbugsXml.xml
 
-      # Step 6: Generate JaCoCo Coverage Report
+      # Step 9: Generate JaCoCo Coverage Report
       - name: Upload JaCoCo Coverage Report
         uses: actions/upload-artifact@v4
         with:
           name: jacoco-coverage-report
           path: target/site/jacoco/
 
-      # Step 7: Perform CodeQL Analysis
+      # Step 10: Perform CodeQL Analysis
       - name: Perform CodeQL Analysis (Initialization)
         uses: github/codeql-action/init@v3
         with:
@@ -85,17 +110,7 @@ jobs:
       - name: Perform CodeQL Analysis (Scan)
         uses: github/codeql-action/analyze@v3
 
-      # Step 8: Static Code Analysis with Checkstyle
-      - name: Generate Maven Site (includes Checkstyle HTML)
-        run: mvn clean site
-
-      - name: Upload Checkstyle Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: checkstyle-report
-          path: target/site/checkstyle.html
-
-      # Step 9: Dependency Review
+      # Step 11: Dependency Review
       - name: Dependency Review
         if: github.event_name == 'pull_request'
         uses: actions/dependency-review-action@v2
