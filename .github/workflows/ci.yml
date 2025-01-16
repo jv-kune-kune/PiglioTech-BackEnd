@@ -1,5 +1,10 @@
 name: Java CI Pipeline
 
+permissions:
+  actions: write
+  contents: write
+  security-events: write
+
 on:
   push:
     branches:
