@@ -64,8 +64,14 @@ jobs:
         uses: github/codeql-action/analyze@v2
 
       # Step 8: Static Code Analysis with Checkstyle
-      - name: Checkstyle Analysis
-        run: mvn checkstyle:check
+      - name: Generate Checkstyle Report
+        run: mvn checkstyle:checkstyle
+
+      - name: Upload Checkstyle Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: checkstyle-report
+          path: target/site/checkstyle.html
 
       # Step 9: SonarCloud Analysis
       - name: SonarCloud Analysis
