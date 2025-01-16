@@ -23,6 +23,11 @@ public class Match {
     @JoinColumn(name = "user_two_isbn")
     private Book userTwoBook;
 
+    @Column
+    private boolean userOneDismissed;
+    @Column
+    private boolean userTwoDismissed;
+
     public Match() {}
 
     public Match(User userOne, User userTwo, Book userOneBook, Book userTwoBook) {
@@ -30,8 +35,13 @@ public class Match {
         this.userTwo = userTwo;
         this.userOneBook = userOneBook;
         this.userTwoBook = userTwoBook;
+        this.userOneDismissed = false;
+        this.userTwoDismissed = false;
     }
 
+    public Long getId() {
+        return id;
+    }
     public User getUserOne() {
         return userOne;
     }
@@ -43,6 +53,12 @@ public class Match {
     }
     public Book getUserTwoBook() {
         return userTwoBook;
+    }
+    public boolean isUserOneDismissed() {
+        return userOneDismissed;
+    }
+    public boolean isUserTwoDismissed() {
+        return userTwoDismissed;
     }
 
     public void setUserOne(User userOne) {
@@ -56,5 +72,11 @@ public class Match {
     }
     public void setUserTwoBook(Book userTwoBook) {
         this.userTwoBook = userTwoBook;
+    }
+    public void setUserTwoDismissed(boolean userTwoDismissed) {
+        this.userTwoDismissed = userTwoDismissed;
+    }
+    public void setUserOneDismissed(boolean userOneDismissed) {
+        this.userOneDismissed = userOneDismissed;
     }
 }
