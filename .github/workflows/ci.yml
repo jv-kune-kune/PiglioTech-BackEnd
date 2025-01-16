@@ -79,8 +79,9 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          projectKey: jv-kune-kune_PiglioTech-BackEnd
-          organization: jv-kune-kune
+          args: >
+            -Dsonar.projectKey=jv-kune-kune_PiglioTech-BackEnd
+            -Dsonar.organization=jv-kune-kune
 
       # Step 10: Dependency Review
       - name: Dependency Review
