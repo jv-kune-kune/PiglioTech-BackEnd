@@ -45,9 +45,4 @@ public class GlobalExceptionHandler {
         ));
     }
 
-    @ExceptionHandler(EntityExistsException.class)
-    public ResponseEntity<String> handleEntityExistsException(EntityExistsException e) {
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
-    }
-
 }
