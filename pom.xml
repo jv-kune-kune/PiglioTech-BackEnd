@@ -90,13 +90,17 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>30.1.1-jre</version>
+			<version>33.2.1-jre</version>
 		</dependency>
 	</dependencies>
 
 	<repositories>
 		<repository>
 			<id>central</id>
+			<url>https://repo.maven.apache.org/maven2</url>
+		</repository>
+		<repository>
+			<id>maven-central</id>
 			<url>https://repo.maven.apache.org/maven2</url>
 		</repository>
 	</repositories>
@@ -160,10 +164,17 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
 				<version>3.6.0</version>
+				<dependencies>
+					<dependency>
+						<groupId>com.puppycrawl.tools</groupId>
+						<artifactId>checkstyle</artifactId>
+						<version>10.14.1</version> <!-- Known working version -->
+					</dependency>
+				</dependencies>
 				<configuration>
 					<configLocation>checkstyle.xml</configLocation>
-					<failOnViolation>false</failOnViolation> <!-- Allow reporting without failing -->
-					<outputFile>target/checkstyle-result.xml</outputFile> <!-- XML output -->
+					<failOnViolation>false</failOnViolation>
+					<outputFile>target/checkstyle-result.xml</outputFile>
 					<outputFileFormat>xml</outputFileFormat>
 				</configuration>
 			</plugin>
