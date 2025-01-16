@@ -24,6 +24,7 @@ import java.util.NoSuchElementException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -129,7 +130,8 @@ class SwapControllerTest {
         SwapRequestDto dto = new SwapRequestDto("UID_1", "UID_2", "12345");
         String dtoBody = mapper.writeValueAsString(dto);
 
-        when(mockSwapService.makeSwapRequest(any(SwapRequestDto.class))).thenThrow(EntityExistsException.class);
+        doThrow(new EntityExistsException("Identical swap request has already been made"))
+                .when(mockSwapService).makeSwapRequest(any(SwapRequestDto.class));
 
         mockMvcController.perform(
                 MockMvcRequestBuilders.post(endpoint)
@@ -152,6 +154,7 @@ class SwapControllerTest {
                         .content(dtoBody)
         ).andExpect(MockMvcResultMatchers.status().isNotFound());
     }
+
 
 
     // tests for SwapRequestDto
@@ -213,3 +216,33 @@ class SwapControllerTest {
 
 
 
+
+    @Test
+    @DisplayName("POST request to /api/v1/swaps/dismiss with valid dismissal object returns HTTP 204")
+    void test_postDismiss_validDismissal() throws Exception {
+        SwapDismissal dismissal = new SwapDismissal("UID_1", 1L);
+        String dismissalBody = mapper.writeValueAsString(dismissal);
+
+        mockMvcController.perform(
+                MockMvcRequestBuilders.post(endpoint + "/dismiss")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(dismissalBody)
+        ).andExpect(MockMvcResultMatchers.status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("POST request to /api/v1/swaps/dismiss with dismissal object containing IDs not present returns HTTP 404")
+    void test_postDismiss_notFound() throws Exception {
+        SwapDismissal dismissal = new SwapDismissal("UID_1", 1L);
+        String dismissalBody = mapper.writeValueAsString(dismissal);
+
+        doThrow(new NoSuchElementException("Either ID or UID not present in any matches"))
+                .when(mockSwapService).dismissSwap(any(SwapDismissal.class));
+
+        mockMvcController.perform(
+                MockMvcRequestBuilders.post(endpoint + "/dismiss")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(dismissalBody)
+        ).andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+}
