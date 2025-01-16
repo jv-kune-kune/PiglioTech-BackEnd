@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface SwapRepository extends CrudRepository<Swap, Long> {
-    List<Swap> findAll_ByRequesterUid_and_ResponderUid(String requesterUid, String responderUid);
+    List<Swap> findByRequesterUidAndResponderUid(String requesterUid, String responderUid);
 }

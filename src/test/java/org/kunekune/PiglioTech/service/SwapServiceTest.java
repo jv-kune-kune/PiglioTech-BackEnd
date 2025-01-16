@@ -14,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -47,7 +46,7 @@ public class SwapServiceTest {
 
         List<Swap> swaps = List.of(new Swap(user1, user2, book1, book2));
 
-        when(mockRepository.findAll_ByRequesterUid_and_ResponderUid("user1", "user2")).thenReturn(swaps);
+        when(mockRepository.findByRequesterUidAndResponderUid("user1", "user2")).thenReturn(swaps);
 
         List<Swap> result = swapService.getSwaps("user1");
 

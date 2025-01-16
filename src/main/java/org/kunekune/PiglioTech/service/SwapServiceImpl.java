@@ -23,7 +23,7 @@ public class SwapServiceImpl implements SwapService {
         if (userId == null || userId.isEmpty()) {
             throw new IllegalArgumentException("User ID cannot be null or empty");
         }
-        return swapRepository.findAll_ByRequesterUid_and_ResponderUid(userId, userId);
+        return swapRepository.findByRequesterUidAndResponderUid(userId, userId);
     }
 
     @Override
