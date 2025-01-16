@@ -2,13 +2,11 @@ package org.kunekune.PiglioTech.service;
 
 
 import jakarta.persistence.EntityExistsException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.kunekune.PiglioTech.model.*;
 import org.kunekune.PiglioTech.repository.MatchRepository;
-import org.kunekune.PiglioTech.repository.SwapRepository;
 import org.kunekune.PiglioTech.repository.SwapRequestRepository;
 import org.kunekune.PiglioTech.repository.UserRepository;
 import org.mockito.InjectMocks;
@@ -27,9 +25,6 @@ import static org.mockito.Mockito.*;
 
 @DataJpaTest
 public class SwapServiceTest {
-
-    @Mock
-    private SwapRepository mockRepository;
 
     @Mock
     private MatchRepository mockMatchRepository;

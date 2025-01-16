@@ -155,4 +155,35 @@ class SwapControllerTest {
                         .content(dtoBody)
         ).andExpect(MockMvcResultMatchers.status().isNotFound());
     }
+
+
+
+    @Test
+    @DisplayName("POST request to /api/v1/swaps/dismiss with valid dismissal object returns HTTP 204")
+    void test_postDismiss_validDismissal() throws Exception {
+        SwapDismissal dismissal = new SwapDismissal("UID_1", 1L);
+        String dismissalBody = mapper.writeValueAsString(dismissal);
+
+        mockMvcController.perform(
+                MockMvcRequestBuilders.post(endpoint + "/dismiss")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(dismissalBody)
+        ).andExpect(MockMvcResultMatchers.status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("POST request to /api/v1/swaps/dismiss with dismissal object containing IDs not present returns HTTP 404")
+    void test_postDismiss_notFound() throws Exception {
+        SwapDismissal dismissal = new SwapDismissal("UID_1", 1L);
+        String dismissalBody = mapper.writeValueAsString(dismissal);
+
+        doThrow(new NoSuchElementException("Either ID or UID not present in any matches"))
+                .when(mockSwapService).dismissSwap(any(SwapDismissal.class));
+
+        mockMvcController.perform(
+                MockMvcRequestBuilders.post(endpoint + "/dismiss")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(dismissalBody)
+        ).andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
 }

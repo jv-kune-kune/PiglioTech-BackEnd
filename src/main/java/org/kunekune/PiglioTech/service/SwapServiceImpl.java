@@ -3,7 +3,6 @@ package org.kunekune.PiglioTech.service;
 import jakarta.persistence.EntityExistsException;
 import org.kunekune.PiglioTech.model.*;
 import org.kunekune.PiglioTech.repository.MatchRepository;
-import org.kunekune.PiglioTech.repository.SwapRepository;
 import org.kunekune.PiglioTech.repository.SwapRequestRepository;
 import org.kunekune.PiglioTech.repository.UserRepository;
 import org.kunekune.PiglioTech.util.SwapConverters;
@@ -16,8 +15,6 @@ import java.util.NoSuchElementException;
 @Service
 public class SwapServiceImpl implements SwapService {
 
-    private final SwapRepository swapRepository;
-
     @Autowired
     private SwapRequestRepository swapRequestRepository;
 
@@ -26,11 +23,6 @@ public class SwapServiceImpl implements SwapService {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    public SwapServiceImpl(SwapRepository swapRepository) {
-        this.swapRepository = swapRepository;
-    }
 
     @Override
     public List<MatchDto> getMatches(String userId) {
