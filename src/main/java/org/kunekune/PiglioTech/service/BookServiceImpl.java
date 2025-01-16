@@ -29,13 +29,11 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book getBookByIsbn(String isbn) {
-        if (repository.existsById(isbn)) {
-            return repository.findById(isbn).get(); // Confirmed to exist
-        } else {
+        return repository.findById(isbn).orElseGet(() -> {
             Book book = googleDao.fetchBookByIsbn(isbn);
             saveBook(book);
             return book;
-        }
+        });
     }
 
     @Override

@@ -101,13 +101,6 @@ class UserServiceTest {
     @Test
     @DisplayName("getUsersByRegion returns an empty list when provided with an empty region")
     void test_getUsersByRegion_emptyRegion() {
-        User user1 = new User("UID_1", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
-        User user2 = new User("UID_2", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
-        User user3 = new User("UID_3", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
-        User user4 = new User("UID_4", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
-        User user5 = new User("UID_5", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
-        List<User> users = List.of(user1, user2, user3, user4, user5);
-
         when(mockRepository.getUsersByRegion(any(Region.class))).thenReturn(List.of());
 
         List<User> returnedUsers = userService.getUsersByRegion(Region.NORTH_EAST);
@@ -163,12 +156,6 @@ class UserServiceTest {
     @Test
     @DisplayName("getUsersByRegionExclude returns an empty list when there are no users in that region")
     void test_getUsersByRegionExclude_emptyRegion() {
-        User user1 = new User("UID_1", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
-        User user2 = new User("UID_2", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
-        User user3 = new User("UID_3", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
-        User user4 = new User("UID_4", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
-        User user5 = new User("UID_5", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
-        List<User> users = List.of(user1, user2, user3, user4, user5);
 
         when(mockRepository.getUsersByRegion(any(Region.class))).thenReturn(List.of());
 
