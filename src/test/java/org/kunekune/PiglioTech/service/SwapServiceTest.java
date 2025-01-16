@@ -127,8 +127,8 @@ public class SwapServiceTest {
 
         List<MatchDto> matches = swapService.getMatches("UID_1");
 
-        assertAll(() -> assertTrue(matches.size() == 1),
-                () -> assertTrue(matches.getFirst().id() == 1L),
+        assertAll(() -> assertEquals(1, matches.size()),
+                () -> assertEquals(1L, matches.getFirst().id()),
                 () -> assertEquals(userOne, matches.getFirst().userOne()),
                 () -> assertEquals(userTwo, matches.getFirst().userTwo()),
                 () -> assertEquals(bookOne, matches.getFirst().userOneBook()),
