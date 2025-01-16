@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class SwapServiceImpl implements SwapService {
@@ -29,33 +30,6 @@ public class SwapServiceImpl implements SwapService {
     @Autowired
     public SwapServiceImpl(SwapRepository swapRepository) {
         this.swapRepository = swapRepository;
-    }
-
-
-    @Override
-    public List<Swap> getSwaps(String userId) {
-        if (userId == null || userId.isEmpty()) {
-            throw new IllegalArgumentException("User ID cannot be null or empty");
-        }
-        return swapRepository.findByRequesterUidAndResponderUid(userId, userId);
-    }
-
-    @Override
-    public Swap createSwap(Swap swap) {
-        if (swap == null || swap.getRequester() == null || swap.getResponder() == null ||
-                swap.getRequesterBook() == null || swap.getResponderBook() == null) {
-            throw new IllegalArgumentException("Invalid swap data");
-        }
-        return swapRepository.save(swap);
-    }
-
-
-    @Override
-    public void deleteSwap(Long swapId) {
-        if (!swapRepository.existsById(swapId)) {
-            throw new IllegalArgumentException(String.format("Swap with ID %d does not exist", swapId));
-        }
-        swapRepository.deleteById(swapId);
     }
 
     @Override
@@ -103,7 +77,32 @@ public class SwapServiceImpl implements SwapService {
 
     @Override
     public void dismissSwap(SwapDismissal dismissal) {
-        // Dummy
+        Match match = matchRepository.findById(dismissal.MatchId()).orElseThrow();
+
+        if (match.getUserOne().getUid().equals(dismissal.userId())) {
+            if (match.isUserOneDismissed()) return;
+            match.setUserOneDismissed(true);
+        } else if (match.getUserTwo().getUid().equals(dismissal.userId())) {
+            if (match.isUserTwoDismissed()) return;
+            match.setUserTwoDismissed(true);
+        } else {
+            throw new NoSuchElementException("No such match with user ID " + dismissal.userId());
+        }
+
+        if (match.isUserOneDismissed() && match.isUserTwoDismissed()) {
+            List<SwapRequest> swapRequests = swapRequestRepository.findSwapRequestsBetweenUsers(match.getUserOne().getUid(),
+                    match.getUserTwo().getUid());
+            for (SwapRequest swap : swapRequests) {
+                if (swap.getReceiver().equals(match.getUserOne()) && swap.getReceiverBook().equals(match.getUserOneBook())
+                || swap.getReceiver().equals(match.getUserTwo()) && swap.getReceiverBook().equals(match.getUserTwoBook())) {
+                    swapRequestRepository.delete(swap);
+                }
+            }
+            matchRepository.delete(match);
+            return;
+        }
+
+        matchRepository.save(match);
     }
 }
 

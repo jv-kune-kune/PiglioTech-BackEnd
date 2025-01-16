@@ -33,12 +33,4 @@ public class SwapController {
         swapService.dismissSwap(dismissal);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSwap(@PathVariable Long id) {
-        swapService.deleteSwap(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-
 }

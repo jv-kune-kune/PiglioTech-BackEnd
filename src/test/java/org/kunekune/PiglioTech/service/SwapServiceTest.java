@@ -49,70 +49,6 @@ public class SwapServiceTest {
     }
 
     @Test
-    @DisplayName("getSwaps returns all swaps for a given user")
-    void testGetSwaps() {
-        User user1 = new User("user1", "John Doe", "john.doe@example.com", Region.NORTH_WEST, "http://thumbnail.com/1");
-        User user2 = new User("user2", "Jane Doe", "jane.doe@example.com", Region.NORTH_WEST, "http://thumbnail.com/2");
-        Book book1 = new Book("9781234567897", "Book 1", "Author 1", "2020", "http://thumbnail.com/book1", "Description 1");
-        Book book2 = new Book("9780987654321", "Book 2", "Author 2", "2021", "http://thumbnail.com/book2", "Description 2");
-
-        List<Swap> swaps = List.of(new Swap(user1, user2, book1, book2));
-
-        when(mockRepository.findByRequesterUidAndResponderUid("user1", "user2")).thenReturn(swaps);
-
-        List<Swap> result = swapService.getSwaps("user1");
-
-        assertEquals(1, result.size());
-        assertEquals(swaps.get(0), result.get(0));
-    }
-
-    @Test
-    @DisplayName("createSwap saves a new swap and returns it")
-    void testCreateSwap() {
-        // Arrange: Set up a valid Swap object
-        User requester = new User("user1", "John Doe", "john.doe@example.com", Region.NORTH_WEST, "http://thumbnail.com/1");
-        User responder = new User("user2", "Jane Doe", "jane.doe@example.com", Region.NORTH_WEST, "http://thumbnail.com/2");
-        Book requesterBook = new Book("9781234567897", "Book 1", "Author 1", "2020", "http://thumbnail.com/book1", "Description 1");
-        Book responderBook = new Book("9780987654321", "Book 2", "Author 2", "2021", "http://thumbnail.com/book2", "Description 2");
-
-        Swap swap = new Swap(requester, responder, requesterBook, responderBook);
-
-        when(mockRepository.save(swap)).thenReturn(swap);
-
-        Swap result = swapService.createSwap(swap);
-
-        Assert.assertNotNull(result);
-        assertEquals(swap, result);
-    }
-
-    @Test
-    @DisplayName("deleteSwap successfully deletes a swap if it exists")
-    void testDeleteSwap_success() {
-        // Arrange
-        Long swapId = 1L;
-        when(mockRepository.existsById(swapId)).thenReturn(true);
-
-        assertDoesNotThrow(() -> swapService.deleteSwap(swapId));
-    }
-
-    @Test
-    @DisplayName("deleteSwap throws NoSuchElementException if the swap does not exist")
-    void testDeleteSwap_nonExistentSwap() {
-
-        Long swapId = 1L;
-        when(mockRepository.existsById(swapId)).thenReturn(false);
-
-
-        Exception exception = assertThrows(NoSuchElementException.class, () -> {
-            swapService.deleteSwap(swapId);
-        });
-
-        assertEquals("Swap with ID " + swapId + " does not exist", exception.getMessage());
-    }
-
-
-
-    @Test
     @DisplayName("getMatches returns all matches a user is implicated in, in the form of a list of MatchDtos")
     void test_getMatches_happyPath() {
         User userOne = new User("UID_1", "NAME 1", "EMAIL 1", Region.NORTH_WEST, "http://thumbnail.com/1");
@@ -283,12 +219,100 @@ public class SwapServiceTest {
 
 
 
-//    @Test
-//    @DisplayName("dismissSwap throws NoSuchElementException if its matchId does not exist")
-//
-//    @Test
-//    @DisplayName("dismissSwap throws NoSuchElementException if its userId does not exist for a correct MatchId")
-//
-//    @Test
-//    @DisplayName("dismissSwap deletes a match if two complementary dismissals are made to it")
+    @Test
+    @DisplayName("dismissSwap throws NoSuchElementException if its matchId does not exist")
+    void test_dismissSwap_noSuchMatch() {
+        SwapDismissal dismissal = new SwapDismissal("UID_1", 1L);
+
+        when(mockMatchRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(NoSuchElementException.class, () -> swapService.dismissSwap(dismissal));
+    }
+
+    @Test
+    @DisplayName("dismissSwap throws NoSuchElementException if its userId does not exist for a correct MatchId")
+    void test_dismissSwap_userIdDoesNotMatch() {
+        User userOne = new User("UID_1", "NAME 1", "EMAIL 1", Region.NORTH_WEST, "http://thumbnail.com/1");
+        Book bookOne = new Book("54321", "TITLE 1", "AUTHOR 1", "1900", "http://thumbnail.com/3", "There can only be one");
+        User userTwo = new User("UID_2", "NAME 2", "EMAIL 2", Region.NORTH_WEST, "http://thumbnail.com/2");
+        Book bookTwo = new Book("12345", "TITLE 2", "AUTHOR 2", "1900", "http://thumbnail.com/4", "Two peas in a pod");
+        Match match = new Match(userOne, userTwo, bookOne, bookTwo);
+        match.setId(1L);
+
+        SwapDismissal dismissal = new SwapDismissal("UID_5000", 1L);
+
+        when(mockMatchRepository.findById(anyLong())).thenReturn(Optional.of(match));
+
+        assertThrows(NoSuchElementException.class, () -> swapService.dismissSwap(dismissal));
+    }
+
+    @Test
+    @DisplayName("dismissSwap marks the correct user as having dismissed a swap and saves the matc")
+    void test_dismissSwap_correctlyDismisses() {
+        User userOne = new User("UID_1", "NAME 1", "EMAIL 1", Region.NORTH_WEST, "http://thumbnail.com/1");
+        Book bookOne = new Book("54321", "TITLE 1", "AUTHOR 1", "1900", "http://thumbnail.com/3", "There can only be one");
+        User userTwo = new User("UID_2", "NAME 2", "EMAIL 2", Region.NORTH_WEST, "http://thumbnail.com/2");
+        Book bookTwo = new Book("12345", "TITLE 2", "AUTHOR 2", "1900", "http://thumbnail.com/4", "Two peas in a pod");
+        Match match = new Match(userOne, userTwo, bookOne, bookTwo);
+        match.setId(1L);
+
+        SwapDismissal dismissal = new SwapDismissal("UID_1", 1L);
+
+        when(mockMatchRepository.findById(anyLong())).thenReturn(Optional.of(match));
+        when(mockMatchRepository.save(match)).thenReturn(match);
+
+        swapService.dismissSwap(dismissal);
+
+        assertTrue(match.isUserOneDismissed());
+        assertFalse(match.isUserTwoDismissed());
+        verify(mockMatchRepository, times(1)).save(any(Match.class));
+    }
+
+    @Test
+    @DisplayName("dismissSwap is externally idempotent when already dismissed item is dismissed again")
+    void test_dismissSwap_alreadyDismissed() {
+        User userOne = new User("UID_1", "NAME 1", "EMAIL 1", Region.NORTH_WEST, "http://thumbnail.com/1");
+        Book bookOne = new Book("54321", "TITLE 1", "AUTHOR 1", "1900", "http://thumbnail.com/3", "There can only be one");
+        User userTwo = new User("UID_2", "NAME 2", "EMAIL 2", Region.NORTH_WEST, "http://thumbnail.com/2");
+        Book bookTwo = new Book("12345", "TITLE 2", "AUTHOR 2", "1900", "http://thumbnail.com/4", "Two peas in a pod");
+        Match match = new Match(userOne, userTwo, bookOne, bookTwo);
+        match.setId(1L);
+        match.setUserOneDismissed(true);
+
+        SwapDismissal dismissal = new SwapDismissal("UID_1", 1L);
+
+        when(mockMatchRepository.findById(anyLong())).thenReturn(Optional.of(match));
+        when(mockMatchRepository.save(match)).thenReturn(match);
+
+        swapService.dismissSwap(dismissal);
+
+        assertTrue(match.isUserOneDismissed());
+        assertFalse(match.isUserTwoDismissed());
+        verify(mockMatchRepository, times(0)).save(any(Match.class));
+    }
+
+    @Test
+    @DisplayName("dismissSwap deletes a match if two complementary dismissals are made to it")
+    void test_dismissSwap_bothUsersDismissed() {
+        User userOne = new User("UID_1", "NAME 1", "EMAIL 1", Region.NORTH_WEST, "http://thumbnail.com/1");
+        Book bookOne = new Book("54321", "TITLE 1", "AUTHOR 1", "1900", "http://thumbnail.com/3", "There can only be one");
+        User userTwo = new User("UID_2", "NAME 2", "EMAIL 2", Region.NORTH_WEST, "http://thumbnail.com/2");
+        Book bookTwo = new Book("12345", "TITLE 2", "AUTHOR 2", "1900", "http://thumbnail.com/4", "Two peas in a pod");
+        Match match = new Match(userOne, userTwo, bookOne, bookTwo);
+        match.setId(1L);
+        match.setUserOneDismissed(true);
+
+        SwapDismissal dismissal = new SwapDismissal("UID_2", 1L);
+
+        when(mockMatchRepository.findById(anyLong())).thenReturn(Optional.of(match));
+        when(mockSwapRequestRepository.findSwapRequestsBetweenUsers(anyString(), anyString())).thenReturn(List.of(
+                new SwapRequest(userOne, userTwo, bookTwo),
+                new SwapRequest(userTwo, userOne, bookOne)
+        ));
+
+        swapService.dismissSwap(dismissal);
+        verify(mockMatchRepository, times(0)).save(any(Match.class));
+        verify(mockMatchRepository, times(1)).delete(any(Match.class));
+        verify(mockSwapRequestRepository, times(2)).delete(any(SwapRequest.class));
+    }
 }
