@@ -1,4 +1,4 @@
-name: Java CI/CD Pipeline
+name: Java CI Pipeline
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      # Step 3: Cache Dependencies
+      # Step 3: Cache Maven dependencies
       - name: Cache Maven dependencies
         uses: actions/cache@v3
         with:
@@ -34,42 +34,45 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      # Step 4: Build and Test
-      - name: Build and test with Maven
+      # Step 4: Build the Project
+      - name: Build with Maven
         run: mvn clean verify
 
-      # Step 5: Upload JaCoCo Coverage Report
+      # Step 5: Run Unit Tests
+      - name: Run Unit Tests
+        run: mvn test
+
+      # Step 6: Generate JaCoCo Coverage Report
       - name: Upload JaCoCo Coverage Report
         uses: actions/upload-artifact@v3
         with:
           name: jacoco-coverage-report
           path: target/site/jacoco/
 
-      # Step 6: Code Scanning with CodeQL
-      - name: Perform CodeQL Analysis
+      # Step 7: Perform CodeQL Analysis
+      - name: Perform CodeQL Analysis (Initialization)
         uses: github/codeql-action/init@v2
         with:
           languages: java
-      - name: Perform CodeQL Analysis
+
+      - name: Perform CodeQL Analysis (Scan)
         uses: github/codeql-action/analyze@v2
 
-      # Step 7: Dependency Review
+      # Step 8: Static Code Analysis with Checkstyle
+      - name: Checkstyle Analysis
+        run: mvn checkstyle:check
+
+      # Step 9: SonarCloud Analysis
+      - name: SonarCloud Analysis
+        uses: sonarsource/sonarcloud-github-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectKey: jv-kune-kune_PiglioTech-BackEnd
+          organization: jv-kune-kune
+
+      # Step 10: Dependency Review
       - name: Dependency Review
         uses: actions/dependency-review-action@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-
-  deploy:
-    name: Deploy to Staging
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Deploy to Staging
-        run: |
-          echo "Deploying application to staging..."
-          # Add your deployment script here
