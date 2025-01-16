@@ -93,6 +93,9 @@ jobs:
 
       # Step 9: Dependency Review
       - name: Dependency Review
+        if: github.event_name == 'pull_request'
         uses: actions/dependency-review-action@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          fail-on-severity: low
+          fail-on-scopes: runtime
