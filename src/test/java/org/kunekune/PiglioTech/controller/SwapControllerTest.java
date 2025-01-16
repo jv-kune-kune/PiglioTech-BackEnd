@@ -156,7 +156,6 @@ class SwapControllerTest {
     }
 
 
-
     // tests for SwapRequestDto
     @Test
     @DisplayName("POST request to /api/v1/swaps with invalid SwapRequestDto returns HTTP 400")
@@ -210,11 +209,6 @@ class SwapControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.receiver").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.receiverBook").exists());
     }
-
-}
-
-
-
 
 
     @Test
