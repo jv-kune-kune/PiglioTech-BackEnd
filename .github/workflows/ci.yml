@@ -82,8 +82,8 @@ jobs:
         uses: github/codeql-action/analyze@v3
 
       # Step 8: Static Code Analysis with Checkstyle
-      - name: Generate Checkstyle Report
-        run: mvn checkstyle:checkstyle
+      - name: Generate Maven Site (includes Checkstyle HTML)
+        run: mvn clean site
 
       - name: Upload Checkstyle Report
         uses: actions/upload-artifact@v4
