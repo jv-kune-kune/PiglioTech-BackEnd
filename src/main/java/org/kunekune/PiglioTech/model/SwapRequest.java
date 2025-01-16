@@ -27,6 +27,9 @@ public class SwapRequest {
         this.receiverBook = receiverBook;
     }
 
+    public Long getId() {
+        return id;
+    }
     public User getInitiator() {
         return initiator;
     }
@@ -37,6 +40,9 @@ public class SwapRequest {
         return receiverBook;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    } // For testing
     public void setInitiator(User initiator) {
         this.initiator = initiator;
     }
