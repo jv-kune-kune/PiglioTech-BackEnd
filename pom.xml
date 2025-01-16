@@ -11,7 +11,7 @@
 	<groupId>org.kunekune</groupId>
 	<artifactId>PiglioTech</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>PiglioTech</name>
+	<name>PiglioTech-BackEnd</name>
 	<description>Backend for PiglioTech library app</description>
 	<url>https://github.com/jv-kune-kune/PiglioTech-BackEnd</url>
 	<licenses>
@@ -180,9 +180,23 @@
 					<dependency>
 						<groupId>com.puppycrawl.tools</groupId>
 						<artifactId>checkstyle</artifactId>
-						<version>10.14.1</version>
+						<version>10.21.1</version>
 					</dependency>
 				</dependencies>
+				<configuration>
+					<configLocation>checkstyle.xml</configLocation>
+					<outputFile>target/checkstyle-result.xml</outputFile>
+					<outputFileFormat>xml</outputFileFormat>
+					<failsOnError>false</failsOnError>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 
 			<!-- Maven Site Plugin -->
