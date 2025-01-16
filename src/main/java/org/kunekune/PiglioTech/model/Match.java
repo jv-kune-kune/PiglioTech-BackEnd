@@ -61,6 +61,9 @@ public class Match {
         return userTwoDismissed;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    } // For testing
     public void setUserOne(User userOne) {
         this.userOne = userOne;
     }
