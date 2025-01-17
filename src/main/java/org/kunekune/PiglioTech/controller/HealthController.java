@@ -1,4 +1,4 @@
-package org.kunekune.PiglioTech.healthcheck;
+package org.kunekune.PiglioTech.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
