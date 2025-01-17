@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -31,6 +32,34 @@ class UserServiceTest {
 
     @InjectMocks
     private UserService userService = new UserServiceImpl();
+
+    @Test
+    @DisplayName("getAllUsers returns a list of all users in repository")
+    void test_getAllUsers() {
+        User userOne = new User("UID_1", "NAME 1", "EMAIL 1", Region.NORTH_WEST, "http://thumbnail.com/1");
+        User userTwo = new User("UID_2", "NAME 2", "EMAIL 2", Region.NORTH_EAST, "http://thumbnail.com/2");
+
+        when(mockRepository.findAll()).thenReturn(List.of(userOne, userTwo));
+
+        List<User> users = userService.getAllUsers();
+
+        assertAll(() -> assertEquals(2, users.size()),
+                () -> assertEquals("UID_1", users.getFirst().getUid()),
+                () -> assertEquals("UID_2", users.get(1).getUid())
+        );
+    }
+
+    @Test
+    @DisplayName("getAllUsers returns an empty list when there are no users in repository")
+    void test_getAllUsers_noBooks() {
+        when(mockRepository.findAll()).thenReturn(List.of());
+
+        List<User> users = userService.getAllUsers();
+
+        assertEquals(0, users.size());
+    }
+
+
 
     @Test
     @DisplayName("saveUser returns a new User entity with matching details when provided a valid User entity")
@@ -258,6 +287,84 @@ class UserServiceTest {
         when(mockRepository.findById("user1")).thenReturn(Optional.of(user)); // Mock user exists but has no books
 
         assertThrows(NoSuchElementException.class, () -> userService.removeBookFromUser("user1", "9781234567897"));
+    }
+
+
+
+    @Test
+    @DisplayName("updateUserDetails throws NoSuchElementException if given UID that does not exist in repository")
+    void test_updateUserDetails_userNotFound() {
+        when(mockRepository.findById(anyString())).thenReturn(Optional.empty());
+
+        assertThrows(NoSuchElementException.class, () -> userService.updateUserDetails("UID_1", new HashMap<>()));
+    }
+
+    @Test
+    @DisplayName("When provided with a valid UID and an empty hashmap, an unchanged user entity is saved")
+    void test_updateUserDetails_noUpdate() {
+        User user = new User("UID_1", "NAME 1", "EMAIL 1", Region.NORTH_WEST, "http://thumbnail.com/1");
+        when(mockRepository.findById(anyString())).thenReturn(Optional.of(user));
+
+        when(mockRepository.save(any(User.class))).thenAnswer(a -> {
+            User savedUser = a.getArgument(0);
+            return new User(savedUser.getUid(), savedUser.getName(), savedUser.getEmail(), savedUser.getRegion(), savedUser.getThumbnail());
+        });
+
+        User changedUser = userService.updateUserDetails("UID_1", new HashMap<>());
+
+        assertAll(() -> assertEquals(user.getUid(), changedUser.getUid()),
+                () -> assertEquals(user.getName(), changedUser.getName()),
+                () -> assertEquals(user.getEmail(), changedUser.getEmail()),
+                () -> assertEquals(user.getRegion(), changedUser.getRegion()),
+                () -> assertEquals(user.getThumbnail(), changedUser.getThumbnail())
+        );
+    }
+
+
+    //        User userOne = new User("UID_1", "NAME 1", "EMAIL 1", Region.NORTH_WEST, "http://thumbnail.com/1");
+//        User userTwo = new User("UID_2", "NAME 2", "EMAIL 2", Region.NORTH_EAST, "http://thumbnail.com/2");
+    @Test
+    @DisplayName("When provided with a valid UID and a hashmap with an invalid key, updateUserDetails throws IllegalArgumentException")
+    void test_updateUserDetails_badUpdate() {
+        User user = new User("UID_1", "NAME 1", "EMAIL 1", Region.NORTH_WEST, "http://thumbnail.com/1");
+        when(mockRepository.findById(anyString())).thenReturn(Optional.of(user));
+
+        when(mockRepository.save(any(User.class))).thenAnswer(a -> {
+            User savedUser = a.getArgument(0);
+            return new User(savedUser.getUid(), savedUser.getName(), savedUser.getEmail(), savedUser.getRegion(), savedUser.getThumbnail());
+        });
+
+        HashMap<String, Object> badMap = new HashMap<>();
+        badMap.put("invalid", "invalid");
+
+        assertThrows(IllegalArgumentException.class, () -> userService.updateUserDetails("UID_1", badMap));
+    }
+
+    @Test
+    @DisplayName("When provided with a valid UID and a valid update hashmap, updateUserDetails updates all fields correctly")
+    void test_updateUserDetails_validUpdate() {
+        User user = new User("UID_1", "NAME 1", "EMAIL 1", Region.NORTH_WEST, "http://thumbnail.com/1");
+        when(mockRepository.findById(anyString())).thenReturn(Optional.of(user));
+
+        when(mockRepository.save(any(User.class))).thenAnswer(a -> {
+            User savedUser = a.getArgument(0);
+            return new User(savedUser.getUid(), savedUser.getName(), savedUser.getEmail(), savedUser.getRegion(), savedUser.getThumbnail());
+        });
+
+        HashMap<String, Object> updateMap = new HashMap<>();
+        updateMap.put("name", "NEW NAME");
+        updateMap.put("email", "NEW EMAIL");
+        updateMap.put("region", Region.LONDON);
+        updateMap.put("thumbnail", "NEW THUMB");
+
+        User changedUser = userService.updateUserDetails("UID_1", updateMap);
+
+        assertAll(() -> assertEquals("UID_1", changedUser.getUid()),
+                () -> assertEquals("NEW NAME", changedUser.getName()),
+                () -> assertEquals("NEW EMAIL", changedUser.getEmail()),
+                () -> assertEquals(Region.LONDON, changedUser.getRegion()),
+                () -> assertEquals("NEW THUMB", changedUser.getThumbnail())
+        );
     }
 
 }

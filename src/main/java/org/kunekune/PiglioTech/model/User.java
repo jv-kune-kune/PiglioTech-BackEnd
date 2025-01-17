@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Entity
 @Table(name = "users")
@@ -38,6 +39,13 @@ public class User {
         this.region = region;
         this.thumbnail = thumbnail;
         this.books = new ArrayList<>();
+    }
+
+    public Book getBookByIsbn(String isbn) {
+        for (Book book : books) {
+            if (book.getIsbn().equals(isbn)) return book;
+        }
+        throw new NoSuchElementException("Book with ISBN " + isbn + " not found in user " + uid);
     }
 
     public String getUid() {
