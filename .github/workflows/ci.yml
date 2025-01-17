@@ -50,10 +50,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      # Step 5: Run Spotless Check
-      - name: Run Spotless Check
-        run: |
-            mvn spotless:check || echo "Spotless violations detected. Check the logs for details."
+      # Step 5a: Run Spotless Apply
+      - name: Run Spotless Apply
+        run: mvn spotless:apply
+
+      # Step 5b: Verify Spotless Check Passes
+      - name: Verify Spotless Check
+        run: mvn spotless:check
 
       # Step 6: Static Code Analysis with Checkstyle (Non-failing)
       - name: Generate Maven Site (includes Checkstyle HTML)
