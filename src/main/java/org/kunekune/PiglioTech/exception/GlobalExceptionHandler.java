@@ -15,6 +15,7 @@ public class GlobalExceptionHandler {
     // Common keys for response body
     private static final String RESPONSE_KEY_ERROR = "error";
     private static final String RESPONSE_KEY_MESSAGE = "message";
+    private static final String RESPONSE_KEY_API_RESPONSE = "apiResponse";
 
     // Specific response values
     private static final String ERROR_NOT_FOUND = "Not Found";
@@ -30,8 +31,9 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(NoSuchElementException.class)
   public ResponseEntity<Map<String, Object>> handleNoSuchElement(NoSuchElementException e) {
-    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(ERROR_NOT_FOUND, MESSAGE_RESOURCE_NOT_FOUND, RESPONSE_KEY_MESSAGE,
-        e.getMessage() != null ? e.getMessage() : MESSAGE_RESOURCE_NOT_FOUND));
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+            RESPONSE_KEY_ERROR, ERROR_NOT_FOUND,
+            RESPONSE_KEY_MESSAGE, e.getMessage() != null ? e.getMessage() : MESSAGE_RESOURCE_NOT_FOUND));
   }
 
   @ExceptionHandler(ApiServiceException.class)
@@ -44,7 +46,7 @@ public class GlobalExceptionHandler {
               .body(Map.of(
                       RESPONSE_KEY_ERROR, ERROR_SERVICE,
                       RESPONSE_KEY_MESSAGE, message,
-                      MESSAGE_NO_API_RESPONSE, apiResponse
+                      RESPONSE_KEY_API_RESPONSE, apiResponse
               ));
     }
 
@@ -52,13 +54,17 @@ public class GlobalExceptionHandler {
   public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(
       IllegalArgumentException e) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(Map.of(RESPONSE_KEY_ERROR, ERROR_VALIDATION, RESPONSE_KEY_MESSAGE, e.getMessage()));
+        .body(Map.of(
+                RESPONSE_KEY_ERROR, ERROR_VALIDATION,
+                RESPONSE_KEY_MESSAGE, e.getMessage()));
   }
 
   @ExceptionHandler(EntityExistsException.class)
   public ResponseEntity<Map<String, Object>> handleEntityExistsException(EntityExistsException e) {
     return ResponseEntity.status(HttpStatus.CONFLICT)
-        .body(Map.of(RESPONSE_KEY_ERROR, ERROR_CONFLICT, RESPONSE_KEY_MESSAGE, e.getMessage()));
+        .body(Map.of(
+                RESPONSE_KEY_ERROR, ERROR_CONFLICT,
+                RESPONSE_KEY_MESSAGE, e.getMessage()));
   }
 
 }
