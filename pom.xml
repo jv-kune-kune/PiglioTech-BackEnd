@@ -11,7 +11,7 @@
 	<groupId>org.kunekune</groupId>
 	<artifactId>PiglioTech</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>PiglioTech</name>
+	<name>PiglioTech-BackEnd</name>
 	<description>Backend for PiglioTech library app</description>
 	<url>https://github.com/jv-kune-kune/PiglioTech-BackEnd</url>
 	<licenses>
@@ -106,7 +106,7 @@
 		<dependency>
 			<groupId>com.puppycrawl.tools</groupId>
 			<artifactId>checkstyle</artifactId>
-			<version>10.14.1</version> <!-- Match your Checkstyle version -->
+			<version>10.14.1</version>
 		</dependency>
 	</dependencies>
 
@@ -157,7 +157,7 @@
 				</executions>
 			</plugin>
 
-			<!-- Spotless Maven Plugin (optional, for code formatting) -->
+			<!-- Spotless Maven Plugin -->
 			<plugin>
 				<groupId>com.diffplug.spotless</groupId>
 				<artifactId>spotless-maven-plugin</artifactId>
@@ -180,9 +180,23 @@
 					<dependency>
 						<groupId>com.puppycrawl.tools</groupId>
 						<artifactId>checkstyle</artifactId>
-						<version>10.14.1</version>
+						<version>10.21.1</version>
 					</dependency>
 				</dependencies>
+				<configuration>
+					<configLocation>checkstyle.xml</configLocation>
+					<outputFile>target/checkstyle-result.xml</outputFile>
+					<outputFileFormat>xml</outputFileFormat>
+					<failsOnError>false</failsOnError>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 
 			<!-- Maven Site Plugin -->
@@ -190,6 +204,25 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
 				<version>3.12.1</version> <!-- or a newer stable version -->
+			</plugin>
+
+			<!-- Spotbugs Maven Plugin -->
+			<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<version>4.8.6.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>spotbugs</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<xmlOutput>true</xmlOutput>
+					<xmlOutputDirectory>${project.build.directory}</xmlOutputDirectory>
+					<failOnError>false</failOnError> <!-- Prevents build failure due to SpotBugs findings -->
+				</configuration>
 			</plugin>
 
 			<!-- Sonar Maven Plugin -->
