@@ -191,11 +191,34 @@
 				<version>2.17.5</version>
 				<configuration>
 					<java>
+						<!-- Include all Java files under src/**/*.java -->
+						<includes>
+							<include>src/**/*.java</include>
+						</includes>
+						<!-- Apply Google Java Style -->
 						<eclipse>
 							<file>${basedir}/eclipse-java-google-style.xml</file>
 						</eclipse>
 					</java>
 				</configuration>
+				<executions>
+					<!-- Fail the build during verify phase if spotless:check fails -->
+					<execution>
+						<id>spotless-check</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+					<!-- Automatically apply formatting during validate phase -->
+					<execution>
+						<id>spotless-apply</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>apply</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 
 			<!-- Maven Checkstyle Plugin -->
