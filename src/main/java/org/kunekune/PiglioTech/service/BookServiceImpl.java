@@ -13,31 +13,33 @@ import java.util.List;
 @Service
 public class BookServiceImpl implements BookService {
 
-    @Autowired
-    private BookRepository repository;
+  @Autowired
+  private BookRepository repository;
 
-    @Autowired
-    private GoogleBooksDAO googleDao;
+  @Autowired
+  private GoogleBooksDAO googleDao;
 
-    @Override
-    public Book saveBook(Book book) {
-        return repository.save(book);
-    }
+  @Override
+  public Book saveBook(Book book) {
+    return repository.save(book);
+  }
 
-    @Override
-    public List<Book> getAllBooks() {return  repository.findAll(); }
+  @Override
+  public List<Book> getAllBooks() {
+    return repository.findAll();
+  }
 
-    @Override
-    public Book getBookByIsbn(String isbn) {
-        return repository.findById(isbn).orElseGet(() -> {
-            Book book = googleDao.fetchBookByIsbn(isbn);
-            saveBook(book);
-            return book;
-        });
-    }
+  @Override
+  public Book getBookByIsbn(String isbn) {
+    return repository.findById(isbn).orElseGet(() -> {
+      Book book = googleDao.fetchBookByIsbn(isbn);
+      saveBook(book);
+      return book;
+    });
+  }
 
-    @Override
-    public boolean isValidIsbn(String isbn) {
-        return isbn != null && (isbn.length() == 10 || isbn.length() == 13) && isbn.matches("\\d+");
-    }
+  @Override
+  public boolean isValidIsbn(String isbn) {
+    return isbn != null && (isbn.length() == 10 || isbn.length() == 13) && isbn.matches("\\d+");
+  }
 }

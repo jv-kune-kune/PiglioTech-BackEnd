@@ -8,6 +8,6 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface MatchRepository extends CrudRepository<Match, Long> {
-    @Query("SELECT m FROM Match m WHERE m.userOne.uid = :uid OR m.userTwo.uid = :uid")
-    List<Match> findMatchesByUserUid(@Param("uid") String uid);
+  @Query("SELECT m FROM Match m WHERE m.userOne.uid = :uid OR m.userTwo.uid = :uid")
+  List<Match> findMatchesByUserUid(@Param("uid") String uid);
 }

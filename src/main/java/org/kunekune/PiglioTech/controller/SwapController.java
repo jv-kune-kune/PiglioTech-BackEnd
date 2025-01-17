@@ -14,24 +14,24 @@ import java.util.List;
 @RequestMapping("/api/v1/swaps")
 public class SwapController {
 
-    @Autowired
-    private SwapService swapService;
+  @Autowired
+  private SwapService swapService;
 
-    @GetMapping
-    public ResponseEntity<List<MatchDto>> getSwaps(@RequestParam String userId) {
-        List<MatchDto> matches = swapService.getMatches(userId);
-        return new ResponseEntity<>(matches, HttpStatus.OK);
-    }
+  @GetMapping
+  public ResponseEntity<List<MatchDto>> getSwaps(@RequestParam String userId) {
+    List<MatchDto> matches = swapService.getMatches(userId);
+    return new ResponseEntity<>(matches, HttpStatus.OK);
+  }
 
-    @PostMapping
-    public ResponseEntity<SwapRequest> createSwap(@RequestBody @Valid SwapRequestDto dto) {
-        SwapRequest createdSwap = swapService.makeSwapRequest(dto);
-        return new ResponseEntity<>(createdSwap, HttpStatus.CREATED);
-    }
+  @PostMapping
+  public ResponseEntity<SwapRequest> createSwap(@RequestBody @Valid SwapRequestDto dto) {
+    SwapRequest createdSwap = swapService.makeSwapRequest(dto);
+    return new ResponseEntity<>(createdSwap, HttpStatus.CREATED);
+  }
 
-    @PostMapping("/dismiss")
-    public ResponseEntity<Void> dismissSwap(@RequestBody SwapDismissal dismissal) {
-        swapService.dismissSwap(dismissal);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
+  @PostMapping("/dismiss")
+  public ResponseEntity<Void> dismissSwap(@RequestBody SwapDismissal dismissal) {
+    swapService.dismissSwap(dismissal);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
 }
