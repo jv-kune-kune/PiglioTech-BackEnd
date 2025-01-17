@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
     }
     // Fetch the user
     User user = userRepository.findById(uid)
-        .orElseThrow(() -> new NoSuchElementException("User with ID " + uid + " not found."));
+            .orElseThrow(() -> new NoSuchElementException("User with ID " + uid + " not found."));
 
     // Update user fields dynamically
     updates.forEach((key, value) -> {
@@ -78,7 +78,7 @@ public class UserServiceImpl implements UserService {
           user.setEmail((String) value);
           break;
         case "region":
-          user.setRegion(Region.valueOf((String) value.toString().toUpperCase()));
+          user.setRegion(Region.valueOf(value.toString()));
           break;
         case "thumbnail":
           user.setThumbnail((String) value);
@@ -96,7 +96,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public boolean isValidUser(User user) {
     return user != null && user.getUid() != null && user.getName() != null
-        && user.getEmail() != null && user.getRegion() != null && user.getThumbnail() != null;
+            && user.getEmail() != null && user.getRegion() != null && user.getThumbnail() != null;
   }
 
   public User addBookToUser(String id, String isbn) {
@@ -111,18 +111,18 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public void removeBookFromUser(String userId, String isbn) {
-    {
-      // get the user
-      User user = userRepository.findById(userId)
-          .orElseThrow(() -> new NoSuchElementException("User with ID " + userId + " not found"));
-      boolean removed = user.getBooks().removeIf(book -> Objects.equals(book.getIsbn(), isbn));
+
+    // get the user
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new NoSuchElementException("User with ID " + userId + " not found"));
+    boolean removed = user.getBooks().removeIf(book -> Objects.equals(book.getIsbn(), isbn));
 
 
-      if (!removed) {
-        throw new NoSuchElementException("Book with ISBN " + isbn + " not found in user's library");
-      }
-      userRepository.save(user);
-
+    if (!removed) {
+      throw new NoSuchElementException("Book with ISBN " + isbn + " not found in user's library");
     }
+    userRepository.save(user);
+
+
   }
 }
