@@ -29,6 +29,9 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public User saveUser(User user) {
+    if (user == null) {
+      throw new IllegalArgumentException("User cannot be null");
+    }
     return userRepository.save(user);
   }
 
@@ -43,6 +46,9 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public List<User> getUsersByRegion(Region region) {
+    if (region == null) {
+      throw new IllegalArgumentException("Region cannot be null");
+    }
     return userRepository.getUsersByRegion(region);
   }
 
@@ -55,6 +61,9 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public User updateUserDetails(String uid, Map<String, Object> updates) {
+    if (updates == null) {
+      throw new IllegalArgumentException("Updates map cannot be null");
+    }
     // Fetch the user
     User user = userRepository.findById(uid)
         .orElseThrow(() -> new NoSuchElementException("User with ID " + uid + " not found."));
