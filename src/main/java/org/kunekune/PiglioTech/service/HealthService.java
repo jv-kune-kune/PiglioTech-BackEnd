@@ -21,23 +21,24 @@ public class HealthService {
 
     public Map<String, String> checkHealth() {
         Map<String, String> healthStatus = new HashMap<>();
-
         healthStatus.put("application", "Healthy");
 
-        // check for Neon database
+        // check Neon database health
         try (Connection connection = dataSource.getConnection()) {
             if (connection.isValid(2)) {
                 healthStatus.put("database", "Healthy");
             } else {
-                healthStatus.put("database", "Unhealthy");
+                healthStatus.put("database", "Unhealthy - Invalid connection");
+                return healthStatus;  // exit if DB is unhealthy
             }
         } catch (Exception e) {
             healthStatus.put("database", "Unhealthy - " + e.getMessage());
+            return healthStatus;   // exit if DB connection fails
         }
 
-        // check Google Books API
+        // check Google Books API health
         try {
-            googleBooksDAO.fetchBookByIsbn("9780134685991");       // dummy valid ISBN for testing
+            googleBooksDAO.fetchBookByIsbn("9780134685991");       // dummy ISBN for testing
             healthStatus.put("googleBooksApi", "Healthy");
         } catch (Exception e) {
             healthStatus.put("googleBooksApi", "Unhealthy - " + e.getMessage());

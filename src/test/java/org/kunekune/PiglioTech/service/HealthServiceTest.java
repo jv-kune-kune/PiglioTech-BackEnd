@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.*;
 
 public class HealthServiceTest {
@@ -64,7 +65,7 @@ public class HealthServiceTest {
 
         assertEquals("Unhealthy - Database connection failed", healthStatus.get("database"));
         assertEquals("Healthy", healthStatus.get("application"));
-        assertEquals("Healthy", healthStatus.get("googleBooksApi"));
+        assertNull(healthStatus.get("googleBooksApi"));
 
         verify(mockDataSource).getConnection();
         verifyNoInteractions(mockGoogleBooksDAO);
@@ -72,11 +73,14 @@ public class HealthServiceTest {
 
     @Test
     @DisplayName("checkHealth handles Google Books API failure")
-    void test_checkHealth_googleBooksApiUnhealthy() {
+    void test_checkHealth_googleBooksApiUnhealthy() throws SQLException {
+        // mock the database connection to return a valid connection
+        Connection mockConnection = mock(Connection.class);
+        when(mockDataSource.getConnection()).thenReturn(mockConnection);
+        when(mockConnection.isValid(2)).thenReturn(true); // Mock database connection as healthy
 
+        // mock the GoogleBooksDAO to throw an exception
         doThrow(new RuntimeException("API is down")).when(mockGoogleBooksDAO).fetchBookByIsbn(anyString());
-
-
         Map<String, String> healthStatus = healthService.checkHealth();
 
 
@@ -85,6 +89,6 @@ public class HealthServiceTest {
         assertEquals("Unhealthy - API is down", healthStatus.get("googleBooksApi"));
 
         verify(mockGoogleBooksDAO).fetchBookByIsbn(anyString());
-        verifyNoInteractions(mockDataSource);
+        verify(mockDataSource).getConnection();
     }
 }
