@@ -11,11 +11,11 @@ import java.util.Map;
 @Service
 public class HealthService {
 
-    private final Datasource datasource;
+    private final DataSource dataSource;
     private final GoogleBooksDAO googleBooksDAO;
 
     public HealthService(DataSource dataSource, GoogleBooksDAO googleBooksDAO) {
-        this.datasource = dataSource;
+        this.dataSource = dataSource;
         this.googleBooksDAO = googleBooksDAO;
     }
 
