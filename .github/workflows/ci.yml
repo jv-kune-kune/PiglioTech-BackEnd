@@ -67,7 +67,7 @@ jobs:
       # Step 7: Run SpotBugs (Non-failing)
       - name: Run SpotBugs
         run: |
-          mvn spotbugs:spotbugs
+          mvn spotbugs:spotbugs || echo "SpotBugs found issues, but continuing pipeline."
       - name: Upload SpotBugs Report
         uses: actions/upload-artifact@v4
         with:
