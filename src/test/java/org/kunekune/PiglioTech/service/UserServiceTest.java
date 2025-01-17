@@ -11,10 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -82,6 +79,12 @@ class UserServiceTest {
         () -> assertEquals(user.getThumbnail(), returnedUser.getThumbnail()));
   }
 
+  @Test
+  @DisplayName("saveUser throws IllegalArgumentException when user is null")
+  void test_saveUser_nullUser() {
+    assertThrows(IllegalArgumentException.class, () -> userService.saveUser(null));
+  }
+
 
 
   @Test
@@ -135,6 +138,12 @@ class UserServiceTest {
     List<User> returnedUsers = userService.getUsersByRegion(Region.NORTH_EAST);
 
     assertTrue((returnedUsers.isEmpty()));
+  }
+
+  @Test
+  @DisplayName("getUsersByRegion throws IllegalArgumentException for null region")
+  void test_getUsersByRegion_nullRegion() {
+    assertThrows(IllegalArgumentException.class, () -> userService.getUsersByRegion(null));
   }
 
   @Test
@@ -194,6 +203,22 @@ class UserServiceTest {
     List<User> returnedUsers = userService.getUsersByRegionExclude(Region.NORTH_EAST, "UID_1");
 
     assertTrue((returnedUsers.isEmpty()));
+  }
+
+  @Test
+  @DisplayName("getUsersByRegionExclude ignores empty exclude value and returns all users")
+  void test_getUsersByRegionExclude_emptyExclude() {
+    User user1 = new User("UID_1", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
+    User user2 = new User("UID_2", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
+    List<User> users = List.of(user1, user2);
+
+    when(mockRepository.getUsersByRegion(any(Region.class))).thenReturn(users);
+
+    List<User> returnedUsers = userService.getUsersByRegionExclude(Region.NORTH_WEST, "");
+
+    assertEquals(2, returnedUsers.size());
+    assertTrue(returnedUsers.contains(user1));
+    assertTrue(returnedUsers.contains(user2));
   }
 
 
@@ -378,6 +403,52 @@ class UserServiceTest {
         () -> assertEquals("NEW EMAIL", changedUser.getEmail()),
         () -> assertEquals(Region.LONDON, changedUser.getRegion()),
         () -> assertEquals("NEW THUMB", changedUser.getThumbnail()));
+  }
+
+  @Test
+  @DisplayName("updateUserDetails throws IllegalArgumentException for null updates map")
+  void test_updateUserDetails_nullUpdates() {
+    when(mockRepository.findById(anyString())).thenReturn(Optional.of(
+            new User("UID", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com")));
+
+    assertThrows(IllegalArgumentException.class, () -> userService.updateUserDetails("UID", null));
+  }
+
+  @Test
+  @DisplayName("updateUserDetails throws IllegalArgumentException for invalid region type")
+  void test_updateUserDetails_invalidRegionType() {
+    User user = new User("UID", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
+    when(mockRepository.findById(anyString())).thenReturn(Optional.of(user));
+
+    Map<String, Object> updates = new HashMap<>();
+    updates.put("region", 12345); // Invalid type
+
+    assertThrows(IllegalArgumentException.class, () -> userService.updateUserDetails("UID", updates));
+  }
+
+
+
+  @Test
+  @DisplayName("isValidUser returns false for null user")
+  void test_isValidUser_nullUser() {
+    assertFalse(userService.isValidUser(null));
+  }
+
+  @Test
+  @DisplayName("isValidUser returns false for user with missing fields")
+  void test_isValidUser_missingFields() {
+    User user = new User(null, "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
+    assertFalse(userService.isValidUser(user));
+
+    user = new User("UID", null, "Email", Region.NORTH_WEST, "http://thumbnail.com");
+    assertFalse(userService.isValidUser(user));
+  }
+
+  @Test
+  @DisplayName("isValidUser returns true for fully populated user")
+  void test_isValidUser_validUser() {
+    User user = new User("UID", "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com");
+    assertTrue(userService.isValidUser(user));
   }
 
 }
