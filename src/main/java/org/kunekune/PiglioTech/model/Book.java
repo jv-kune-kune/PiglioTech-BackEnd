@@ -2,9 +2,6 @@ package org.kunekune.PiglioTech.model;
 
 import jakarta.persistence.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Table(name = "books")
 public class Book {

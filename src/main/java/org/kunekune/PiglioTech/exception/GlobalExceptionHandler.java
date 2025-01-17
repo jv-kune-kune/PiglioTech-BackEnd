@@ -38,7 +38,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(EntityExistsException.class)
-    public ResponseEntity<String> handleEntityConflict(EntityExistsException e) {
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+    public ResponseEntity<Map<String, Object>> handleEntityExistsException(EntityExistsException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                "error", "Item already exists",
+                "message", e.getMessage()
+        ));
     }
+
 }
