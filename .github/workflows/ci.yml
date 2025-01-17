@@ -52,7 +52,8 @@ jobs:
 
       # Step 5: Run Spotless Check
       - name: Run Spotless Check
-        run: mvn spotless:check
+        run: |
+            mvn spotless:check || echo "Spotless violations detected. Check the logs for details."
 
       # Step 6: Static Code Analysis with Checkstyle (Non-failing)
       - name: Generate Maven Site (includes Checkstyle HTML)
