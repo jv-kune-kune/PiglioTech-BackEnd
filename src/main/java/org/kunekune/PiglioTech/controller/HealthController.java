@@ -20,7 +20,7 @@ public class HealthController {
 
     @GetMapping ("/health")
     public ResponseEntity<Map<String, String>> checkHealth() {
-        Map<String, String> healthStatus = healthService.performHealthChecks();
+        Map<String, String> healthStatus = healthService.checkHealth();
         return ResponseEntity.ok(healthStatus);
     }
 }
