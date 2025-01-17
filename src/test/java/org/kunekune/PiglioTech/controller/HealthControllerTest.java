@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
+import javax.sql.DataSource;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -18,6 +19,9 @@ public class HealthControllerTest {
 
     @Mock
     private HealthService mockHealthService;
+
+    @Mock
+    private DataSource mockDataSource;
 
     @InjectMocks
     private HealthController healthController;
