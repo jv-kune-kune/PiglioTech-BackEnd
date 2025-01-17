@@ -10,18 +10,20 @@ on:
       - opened
       - reopened
       - ready_for_review
-      
+
 permissions:
   issues: write
 
 jobs:
   add-to-project:
-    name: Add To GitHub projects            
+    name: Add To GitHub projects
     runs-on: ubuntu-latest
     steps:
       - uses: actions/add-to-project@v1.0.2
         with:
-          # You can target a project in a different organization
-          # to the issue
           project-url: https://github.com/orgs/jv-kune-kune/projects/1
-          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+          github-token: ${{ secrets.PAT_SECRET }}
+      - name: Set Output for Resource URL
+        id: set-output
+        run: |
+          echo "::set-output name=resource_url::${{ github.event.issue.html_url || github.event.pull_request.html_url }}"

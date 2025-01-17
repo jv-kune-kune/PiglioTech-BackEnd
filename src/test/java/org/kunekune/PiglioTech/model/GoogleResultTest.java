@@ -38,7 +38,7 @@ class GoogleResultTest {
     void test_asBook_noBooks() {
         GoogleResult bookJson = new GoogleResult(0, new GoogleResult.GoogleBook[]{});
 
-        assertThrows(NoSuchElementException.class, () -> bookJson.asBook());
+        assertThrows(NoSuchElementException.class, bookJson::asBook);
     }
 
    // additional tests - entity functions
@@ -55,7 +55,7 @@ class GoogleResultTest {
                         new GoogleResult.ImageLinks("https://example.com/hound.jpg")
                 ))});
 
-        assertThrows(IllegalStateException.class, () -> bookJson.asBook());
+        assertThrows(IllegalStateException.class, bookJson::asBook);
     }
 
 

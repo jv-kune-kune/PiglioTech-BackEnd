@@ -2,7 +2,7 @@ name: Sync labels
 on:
   # You can run this with every type of event, but it's better to run it only when you actually need it.
   schedule:
-    - cron: "0 * * * *" # Runs every hour
+    - cron: "0 9 * * *" # Runs every day at 09:00
   workflow_dispatch: # Allows manual triggering
 
 permissions:
