@@ -307,7 +307,8 @@ public class UserControllerTest {
     @DisplayName("POST request to /api/v1/users/{id}/books with ISBN already associated with user returns HTTP 409")
     void test_addBookToUser_conflictingIsbns() throws Exception {
         String isbn = mapper.writeValueAsString(new IsbnDto("1234567890"));
-        when(mockService.addBookToUser(anyString(), anyString())).thenThrow(EntityExistsException.class);
+
+        doThrow(new EntityExistsException("Error message")).when(mockService).addBookToUser(anyString(), anyString());
 
         mockMvcController.perform(
                 MockMvcRequestBuilders.post(endpoint + "/98765/books")

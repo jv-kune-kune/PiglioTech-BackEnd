@@ -176,7 +176,8 @@ class SwapControllerTest {
         SwapRequestDto duplicateDto = new SwapRequestDto("UID_1", "UID_2", "ISBN_123");
         String duplicateDtoJson = mapper.writeValueAsString(duplicateDto);
 
-        when(mockSwapService.makeSwapRequest(any(SwapRequestDto.class))).thenThrow(EntityExistsException.class);
+        doThrow(new EntityExistsException("Exception message")).when(mockSwapService)
+                        .makeSwapRequest(any(SwapRequestDto.class));
 
         mockMvcController.perform(MockMvcRequestBuilders.post("/api/v1/swaps")
                         .contentType(MediaType.APPLICATION_JSON)
