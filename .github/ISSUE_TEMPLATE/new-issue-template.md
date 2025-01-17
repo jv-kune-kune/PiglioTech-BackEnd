@@ -7,8 +7,6 @@ assignees: ''
 
 ---
 
----
-
 <!-- Briefly summarise the issue in a concise title next to '#'-->
 #
 
@@ -38,6 +36,7 @@ assignees: ''
 </details>
 
 ---
+
 <!-- For tips, examples, and advanced Markdown usage, see the [Project Workflow README](.github/Project_Workflow.md).  -->
 > [!NOTE]
 > [Project Workflow README](https://github.com/jv-kune-kune/PiglioTech-General/blob/79bc9e731b48fda27fe75c5c85933d7736e25153/.github/Project_Workflow.md#workflow-overview)
