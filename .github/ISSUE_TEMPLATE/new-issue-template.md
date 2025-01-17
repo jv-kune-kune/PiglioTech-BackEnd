@@ -1,8 +1,8 @@
 ---
 name: New Issue Template
 about: Standard issue template to format new general issues.
-title: add consise title, using convention
-labels: ''
+title: ''
+labels: "\U0001F465 backend \U0001F6E0️"
 assignees: ''
 
 ---
@@ -37,3 +37,5 @@ assignees: ''
 
 ---
 <!-- For tips, examples, and advanced Markdown usage, see the [Project Workflow README](.github/Project_Workflow.md). -->
+> [!NOTE]
+> See: [Project Workflow README](https://github.com/jv-kune-kune/PiglioTech-General/blob/79bc9e731b48fda27fe75c5c85933d7736e25153/.github/Project_Workflow.md#workflow-overview)
