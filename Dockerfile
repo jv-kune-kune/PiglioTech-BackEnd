@@ -19,8 +19,8 @@ WORKDIR /app
 # Copy the built JAR from the build stage
 COPY --from=build /app/target/*.jar app.jar
 
-# Copy the Neon properties file
-COPY src/main/resources/application-neon.properties /app/config/application-prod.properties
+# Copy the Prod properties file
+COPY src/main/resources/application-prod.properties /app/config/application-prod.properties
 
 # Expose port 8080
 EXPOSE 8080
