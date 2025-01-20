@@ -37,6 +37,8 @@ build/
 ### Database privacy ###
 application-neon.properties
 DATABASE_URL.secret  # Secure database URL file
+database_url.secret
+*.secret
 
 ### Docker ###
 docker-compose.override.yml  # Local overrides
