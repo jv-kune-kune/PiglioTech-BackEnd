@@ -40,6 +40,7 @@ DATABASE_URL.secret  # Secure database URL file
 
 ### Docker ###
 docker-compose.override.yml  # Local overrides
+.env
 *.env                        # Environment variable files
 
 ### OS/Editor Temporary Files ###
