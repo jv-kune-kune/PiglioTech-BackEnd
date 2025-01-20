@@ -33,5 +33,17 @@ build/
 ### VS Code ###
 .vscode/
 
+
 ### Database privacy ###
 application-neon.properties
+DATABASE_URL.secret  # Secure database URL file
+
+### Docker ###
+docker-compose.override.yml  # Local overrides
+*.env                        # Environment variable files
+
+### OS/Editor Temporary Files ###
+*.swp                        # Vi/Vim swap files
+*.swo
+**/.DS_Store                    # macOS Finder metadata
+Thumbs.db                    # Windows thumbnail cache
