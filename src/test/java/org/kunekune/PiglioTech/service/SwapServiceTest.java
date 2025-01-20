@@ -229,6 +229,24 @@ public class SwapServiceTest {
     verify(mockMatchRepository, times(1)).save(any(Match.class));
   }
 
+  @Test
+  @DisplayName("makeSwapRequest throws EntityExistsException if valid match between two users already exists")
+  void test_makeSwapRequest_matchExists() {
+    User userOne = new User("UID_1", "NAME 1", "EMAIL 1", Region.NORTH_WEST, "http://thumbnail.com/1");
+    User userTwo = new User("UID_2", "NAME 2", "EMAIL 2", Region.NORTH_WEST, "http://thumbnail.com/2");
+
+    Book bookOne = new Book("54321", "TITLE 1", "AUTHOR 1", "1900", "http://thumbnail.com/3", "There can only be one");
+    Book bookTwo = new Book("12345", "TITLE 2", "AUTHOR 2", "1900","http://thumbnail.com/4", "Two peas in a pod");
+
+    Match existingMatch = new Match(userOne, userTwo, bookOne, bookTwo);
+    when(mockMatchRepository.findMatchesBetweenUsers(anyString(), anyString())).thenReturn(List.of(existingMatch));
+
+    SwapRequestDto request = new SwapRequestDto("UID_1", "UID_2", "12345");
+
+    assertThrows(EntityExistsException.class, () -> swapService.makeSwapRequest(request));
+  }
+
+
 
 
   @Test
