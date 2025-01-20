@@ -20,7 +20,7 @@ WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
 # Copy the Neon properties file
-COPY src/main/resources/application-neon.properties /app/config/application-neon.properties
+COPY src/main/resources/application-neon.properties /app/config/application-prod.properties
 
 # Expose port 8080
 EXPOSE 8080
@@ -30,4 +30,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD ["curl", "-f", "http://localhost:8080/actuator/health"]
 
 # Run the Spring Boot application with the Neon properties
-ENTRYPOINT ["java", "-jar", "app.jar", "--spring.config.location=file:/app/config/application-neon.properties"]
+ENTRYPOINT ["java", "-jar", "app.jar", "--spring.config.location=file:/app/config/application-prod.properties"]
