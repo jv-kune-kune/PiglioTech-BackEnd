@@ -16,18 +16,20 @@ import java.util.List;
 @RequestMapping("/api/v1/books")
 public class BookController {
 
-    @Autowired
-    private BookService bookService;
+  @Autowired
+  private BookService bookService;
 
-    @GetMapping()
-    public List<Book> getAllBooks() { return bookService.getAllBooks(); }
+  @GetMapping()
+  public List<Book> getAllBooks() {
+    return bookService.getAllBooks();
+  }
 
-    @GetMapping("/{isbn}")
-    public ResponseEntity<Book> getBookByIsbn(@PathVariable String isbn) {
-        if (isbn.length() != 10 && isbn.length() != 13) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        Book book = bookService.getBookByIsbn(isbn);
-        return new ResponseEntity<>(book, HttpStatus.OK);
+  @GetMapping("/{isbn}")
+  public ResponseEntity<Book> getBookByIsbn(@PathVariable String isbn) {
+    if (isbn.length() != 10 && isbn.length() != 13) {
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
+    Book book = bookService.getBookByIsbn(isbn);
+    return new ResponseEntity<>(book, HttpStatus.OK);
+  }
 }

@@ -11,16 +11,16 @@ import java.util.Map;
 @RestController
 public class HealthController {
 
-    private final HealthService healthService;
+  private final HealthService healthService;
 
-    @Autowired
-    public HealthController(HealthService healthService) {
-        this.healthService = healthService;
-    }
+  @Autowired
+  public HealthController(HealthService healthService) {
+    this.healthService = healthService;
+  }
 
-    @GetMapping ("/health")
-    public ResponseEntity<Map<String, String>> getHealthStatus() {
-        Map<String, String> healthStatus = healthService.checkHealth();
-        return ResponseEntity.ok(healthStatus);
-    }
+  @GetMapping("/health")
+  public ResponseEntity<Map<String, String>> getHealthStatus() {
+    Map<String, String> healthStatus = healthService.checkHealth();
+    return ResponseEntity.ok(healthStatus);
+  }
 }

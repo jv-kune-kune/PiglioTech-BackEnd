@@ -9,66 +9,70 @@ import java.util.List;
 @Table(name = "users")
 public class User {
 
-    @Id
-    private String uid;
-    @Column
-    private String name;
-    @Column
-    private String email;
-    @Column
-    private Region region;
-    @Column
-    private String thumbnail;
+  @Id
+  private String uid;
+  @Column
+  private String name;
+  @Column
+  private String email;
+  @Column
+  private Region region;
+  @Column
+  private String thumbnail;
 
-    @ManyToMany
-    @JoinTable(
-            name = "users_books",
-            joinColumns = @JoinColumn(name = "users_uid"),
-            inverseJoinColumns = @JoinColumn(name = "books_isbn")
-    )
-    private List<Book> books;
+  @ManyToMany
+  @JoinTable(name = "users_books", joinColumns = @JoinColumn(name = "users_uid"),
+      inverseJoinColumns = @JoinColumn(name = "books_isbn"))
+  private List<Book> books;
 
-    public User() {
-    }
+  public User() {}
 
-    public User(String uid, String name, String email, Region region, String thumbnail) {
-        this.uid = uid;
-        this.name = name;
-        this.email = email;
-        this.region = region;
-        this.thumbnail = thumbnail;
-        this.books = new ArrayList<>();
-    }
+  public User(String uid, String name, String email, Region region, String thumbnail) {
+    this.uid = uid;
+    this.name = name;
+    this.email = email;
+    this.region = region;
+    this.thumbnail = thumbnail;
+    this.books = new ArrayList<>();
+  }
 
-    public String getUid() {
-        return uid;
-    }
-    public String getName() {
-        return name;
-    }
-    public String getEmail() {
-        return email;
-    }
-    public Region getRegion() {
-        return region;
-    }
-    public String getThumbnail() {
-        return thumbnail;
-    }
-    public List<Book> getBooks() {
-        return books;
-    }
+  public String getUid() {
+    return uid;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-    public void setEmail(String email) {
-        this.email = email;
-    }
-    public void setThumbnail(String thumbnail) {
-        this.thumbnail = thumbnail;
-    }
-    public void setRegion(Region region) {
-        this.region = region;
-    }
+  public String getName() {
+    return name;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public Region getRegion() {
+    return region;
+  }
+
+  public String getThumbnail() {
+    return thumbnail;
+  }
+
+  public List<Book> getBooks() {
+    return books;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
+  public void setThumbnail(String thumbnail) {
+    this.thumbnail = thumbnail;
+  }
+
+  public void setRegion(Region region) {
+    this.region = region;
+  }
 }

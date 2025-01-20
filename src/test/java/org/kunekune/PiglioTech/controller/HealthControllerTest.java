@@ -17,35 +17,33 @@ import static org.mockito.Mockito.when;
 
 public class HealthControllerTest {
 
-    @Mock
-    private HealthService mockHealthService;
+  @Mock
+  private HealthService mockHealthService;
 
-    @Mock
-    private DataSource mockDataSource;
+  @Mock
+  private DataSource mockDataSource;
 
-    @InjectMocks
-    private HealthController healthController;
+  @InjectMocks
+  private HealthController healthController;
 
-    @BeforeEach
-    void setup() {
-        MockitoAnnotations.openMocks(this);
-    }
+  @BeforeEach
+  void setup() {
+    MockitoAnnotations.openMocks(this);
+  }
 
-    @Test
-    @DisplayName("GET / health returns 200 and health status map")
-    void test_getHealthStatus() {
-        Map<String, String> mockStatus = Map.of(
-                "application", "Healthy",
-                "database", "Healthy",
-                "googleBooksApi", "Healthy" );
+  @Test
+  @DisplayName("GET / health returns 200 and health status map")
+  void test_getHealthStatus() {
+    Map<String, String> mockStatus =
+        Map.of("application", "Healthy", "database", "Healthy", "googleBooksApi", "Healthy");
 
-        when(mockHealthService.checkHealth()).thenReturn(mockStatus);
+    when(mockHealthService.checkHealth()).thenReturn(mockStatus);
 
-        ResponseEntity<Map<String, String>> response = healthController.getHealthStatus();
+    ResponseEntity<Map<String, String>> response = healthController.getHealthStatus();
 
-        assertEquals(200, response.getStatusCodeValue());
-        assertEquals(mockStatus, response.getBody());
-    }
+    assertEquals(200, response.getStatusCodeValue());
+    assertEquals(mockStatus, response.getBody());
+  }
 
 
 }
