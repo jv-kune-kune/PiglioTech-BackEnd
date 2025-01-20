@@ -1,0 +1,16 @@
+services:
+  backend:
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=neon
+      - DATABASE_URL=file:/run/secrets/database_url
+    secrets:
+      - database_url
+    # restart: always
+
+secrets:
+  database_url:
+    file: ./DATABASE_URL.secret
