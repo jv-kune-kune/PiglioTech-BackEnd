@@ -45,5 +45,6 @@ docker-compose.override.yml  # Local overrides
 ### OS/Editor Temporary Files ###
 *.swp                        # Vi/Vim swap files
 *.swo
+.DS_Store
 **/.DS_Store                    # macOS Finder metadata
 Thumbs.db                    # Windows thumbnail cache
