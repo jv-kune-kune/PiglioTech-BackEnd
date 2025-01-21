@@ -1,6 +1,5 @@
 package org.kunekune.PiglioTech.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -25,7 +24,6 @@ public class User {
   @ManyToMany
   @JoinTable(name = "users_books", joinColumns = @JoinColumn(name = "users_uid"),
       inverseJoinColumns = @JoinColumn(name = "books_isbn"))
-  @JsonIgnore
   private List<Book> books;
 
   public User() {}
