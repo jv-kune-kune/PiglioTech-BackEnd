@@ -3,6 +3,7 @@ package org.kunekune.PiglioTech.repository;
 import org.kunekune.PiglioTech.exception.ApiServiceException;
 import org.kunekune.PiglioTech.model.Book;
 import org.kunekune.PiglioTech.model.GoogleResult;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
@@ -14,12 +15,13 @@ import java.util.NoSuchElementException;
 @Repository
 public class GoogleBooksDAO {
 
-  private WebClient client;
+  private final WebClient client;
 
   public GoogleBooksDAO(String url) {
     client = WebClient.builder().baseUrl(url).filter(errorHandler()).build();
   }
 
+  @Autowired
   public GoogleBooksDAO() {
     client = WebClient.builder().baseUrl("https://www.googleapis.com/books/v1")
         .filter(errorHandler()).build();
