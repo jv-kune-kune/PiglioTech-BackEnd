@@ -14,8 +14,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @DataJpaTest
@@ -323,14 +321,19 @@ class UserServiceTest {
   }
 
 
-
   @Test
   @DisplayName("updateUserDetails throws NoSuchElementException if given UID that does not exist in repository")
   void test_updateUserDetails_userNotFound() {
     when(mockRepository.findById(anyString())).thenReturn(Optional.empty());
+    Map<String, Object> emptyMap = setupMockAndReturnEmptyMap();
 
     assertThrows(NoSuchElementException.class,
-        () -> userService.updateUserDetails("UID_1", new HashMap<>()));
+            () -> userService.updateUserDetails("UID_1", emptyMap));
+  }
+
+  private Map<String, Object> setupMockAndReturnEmptyMap() {
+    when(mockRepository.findById(anyString())).thenReturn(Optional.empty());
+    return new HashMap<>();
   }
 
   @Test
@@ -354,11 +357,6 @@ class UserServiceTest {
         () -> assertEquals(user.getThumbnail(), changedUser.getThumbnail()));
   }
 
-
-  // User userOne = new User("UID_1", "NAME 1", "EMAIL 1", Region.NORTH_WEST,
-  // "http://thumbnail.com/1");
-  // User userTwo = new User("UID_2", "NAME 2", "EMAIL 2", Region.NORTH_EAST,
-  // "http://thumbnail.com/2");
   @Test
   @DisplayName("When provided with a valid UID and a hashmap with an invalid key, updateUserDetails throws IllegalArgumentException")
   void test_updateUserDetails_badUpdate() {

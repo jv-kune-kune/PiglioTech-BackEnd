@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -75,7 +76,7 @@ class GlobalExceptionHandlerTest {
 
             // Assert
             assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-            assertEquals("Service Error", response.getBody().get("error"));
+            assertEquals("Service Error", Objects.requireNonNull(response.getBody()).get("error"));
             assertEquals("Bad Request error", response.getBody().get("message"));
             assertEquals("Some API response", response.getBody().get("apiResponse"));
         }
@@ -95,7 +96,7 @@ class GlobalExceptionHandlerTest {
 
             // Assert
             assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-            assertEquals("Service Error", response.getBody().get("error"));
+            assertEquals("Service Error", Objects.requireNonNull(response.getBody()).get("error"));
             assertEquals("Null response test", response.getBody().get("message"));
             assertEquals("No API response", response.getBody().get("apiResponse"));
         }
@@ -117,7 +118,7 @@ class GlobalExceptionHandlerTest {
             // Because we used the (String apiResponse, String message) constructor,
             // we expect the default status: INTERNAL_SERVER_ERROR
             assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-            assertEquals("Service Error", response.getBody().get("error"));
+            assertEquals("Service Error", Objects.requireNonNull(response.getBody()).get("error"));
             assertEquals("Some default error message", response.getBody().get("message"));
             assertEquals("Minimal API response", response.getBody().get("apiResponse"));
         }
@@ -135,7 +136,7 @@ class GlobalExceptionHandlerTest {
             ResponseEntity<Map<String, Object>> response = handler.handleApiServiceError(exception);
 
             // Assert
-            assertEquals("No API response", response.getBody().get("apiResponse"));
+            assertEquals("No API response", Objects.requireNonNull(response.getBody()).get("apiResponse"));
         }
     }
 

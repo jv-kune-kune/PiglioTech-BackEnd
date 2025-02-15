@@ -23,4 +23,9 @@ public class HealthController {
         Map<String, String> healthStatus = healthService.checkHealth();
         return ResponseEntity.ok(healthStatus);
     }
+
+    @GetMapping("/ping")
+    public ResponseEntity<String> ping() {
+        return ResponseEntity.ok("OK");
+    }
 }
