@@ -24,13 +24,10 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-public class UserControllerTest {
+class UserControllerTest {
 
   @Mock
   private UserService mockService;
@@ -42,7 +39,7 @@ public class UserControllerTest {
 
   private ObjectMapper mapper;
 
-  private static final String endpoint = "/api/v1/users";
+  private static final String END_POINT = "/api/v1/users";
 
   @BeforeEach
   public void Setup() {
@@ -58,7 +55,7 @@ public class UserControllerTest {
 
     when(mockService.getUserByUid(anyString())).thenReturn(user);
 
-    mockMvcController.perform(MockMvcRequestBuilders.get(endpoint + "/12345"))
+    mockMvcController.perform(MockMvcRequestBuilders.get(END_POINT + "/12345"))
         .andExpect(MockMvcResultMatchers.status().isOk())
         .andExpect(MockMvcResultMatchers.jsonPath("$.uid").value(user.getUid()))
         .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(user.getName()))
@@ -91,7 +88,7 @@ public class UserControllerTest {
     });
 
     mockMvcController
-        .perform(MockMvcRequestBuilders.post(endpoint).contentType(MediaType.APPLICATION_JSON)
+        .perform(MockMvcRequestBuilders.post(END_POINT).contentType(MediaType.APPLICATION_JSON)
             .content(json))
         .andExpect(MockMvcResultMatchers.status().isCreated())
         .andExpect(MockMvcResultMatchers.jsonPath("$.uid").value(user.getUid()))
@@ -104,39 +101,39 @@ public class UserControllerTest {
   @Test
   @DisplayName("POST request with invalid user details in request body returns HTTP 400")
   void test_post_invalidUsers() throws Exception {
-    String json_missingUid = mapper.writeValueAsString(
+    String jsonMissingUid = mapper.writeValueAsString(
         new User(null, "Name", "Email", Region.NORTH_WEST, "http://thumbnail.com"));
-    String json_missingName = mapper.writeValueAsString(
+    String jsonMissingName = mapper.writeValueAsString(
         new User("UID", null, "Email", Region.NORTH_WEST, "http://thumbnail.com"));
-    String json_missingEmail = mapper.writeValueAsString(
+    String jsonMissingEmail = mapper.writeValueAsString(
         new User("UID", "Name", null, Region.NORTH_WEST, "http://thumbnail.com"));
-    String json_missingRegion =
+    String jsonMissingRegion =
         mapper.writeValueAsString(new User("UID", "Name", "Email", null, "http://thumbnail.com"));
-    String json_missingThumbnail =
+    String jsonMissingThumbnail =
         mapper.writeValueAsString(new User("UID", "Name", "Email", Region.NORTH_WEST, null));
 
     mockMvcController
-        .perform(MockMvcRequestBuilders.post(endpoint).content(json_missingUid)
+        .perform(MockMvcRequestBuilders.post(END_POINT).content(jsonMissingUid)
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(MockMvcResultMatchers.status().isBadRequest());
 
     mockMvcController
-        .perform(MockMvcRequestBuilders.post(endpoint).content(json_missingName)
+        .perform(MockMvcRequestBuilders.post(END_POINT).content(jsonMissingName)
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(MockMvcResultMatchers.status().isBadRequest());
 
     mockMvcController
-        .perform(MockMvcRequestBuilders.post(endpoint).content(json_missingEmail)
+        .perform(MockMvcRequestBuilders.post(END_POINT).content(jsonMissingEmail)
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(MockMvcResultMatchers.status().isBadRequest());
 
     mockMvcController
-        .perform(MockMvcRequestBuilders.post(endpoint).content(json_missingRegion)
+        .perform(MockMvcRequestBuilders.post(END_POINT).content(jsonMissingRegion)
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(MockMvcResultMatchers.status().isBadRequest());
 
     mockMvcController
-        .perform(MockMvcRequestBuilders.post(endpoint).content(json_missingThumbnail)
+        .perform(MockMvcRequestBuilders.post(END_POINT).content(jsonMissingThumbnail)
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(MockMvcResultMatchers.status().isBadRequest());
   }
@@ -144,23 +141,9 @@ public class UserControllerTest {
   @Test
   @DisplayName("POST request with absent user details in request body returns HTTP 400")
   void test_post_noBody() throws Exception {
-    mockMvcController.perform(MockMvcRequestBuilders.post(endpoint))
+    mockMvcController.perform(MockMvcRequestBuilders.post(END_POINT))
         .andExpect(MockMvcResultMatchers.status().isBadRequest());
   }
-
-
-
-  /*
-   * commented test out as @ge-drei may want to repurpose test or handle get all users end point
-   * differently, tbd
-   * 
-   * @Test
-   * 
-   * @DisplayName("GET request with no parameters to /api/v1/users returns HTTP 400") void
-   * test_getRegion_noRegion() throws Exception { mockMvcController.perform(
-   * MockMvcRequestBuilders.get(endpoint)
-   * ).andExpect(MockMvcResultMatchers.status().isBadRequest()); }
-   */
 
   @Test
   @DisplayName("GET request with no parameters to /api/v1/users returns all users with HTTP 200")
@@ -173,7 +156,7 @@ public class UserControllerTest {
 
     when(mockService.getAllUsers()).thenReturn(users);
 
-    mockMvcController.perform(MockMvcRequestBuilders.get(endpoint))
+    mockMvcController.perform(MockMvcRequestBuilders.get(END_POINT))
         .andExpect(MockMvcResultMatchers.status().isOk())
         .andExpect(MockMvcResultMatchers.jsonPath("$[0].uid").value(users.get(0).getUid()))
         .andExpect(MockMvcResultMatchers.jsonPath("$[0].name").value(users.get(0).getName()))
@@ -186,7 +169,7 @@ public class UserControllerTest {
   void test_getAllUsers_emptyList() throws Exception {
     when(mockService.getAllUsers()).thenReturn(List.of());
 
-    mockMvcController.perform(MockMvcRequestBuilders.get(endpoint))
+    mockMvcController.perform(MockMvcRequestBuilders.get(END_POINT))
         .andExpect(MockMvcResultMatchers.status().isOk())
         .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(0)));
   }
@@ -203,7 +186,7 @@ public class UserControllerTest {
 
     when(mockService.getUsersByRegion(any(Region.class))).thenReturn(users);
 
-    mockMvcController.perform(MockMvcRequestBuilders.get(endpoint).param("region", "NORTH_WEST"))
+    mockMvcController.perform(MockMvcRequestBuilders.get(END_POINT).param("region", "NORTH_WEST"))
         .andExpect(MockMvcResultMatchers.status().isOk())
         .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(5)));
   }
@@ -213,7 +196,7 @@ public class UserControllerTest {
   void test_getRegion_invalidRegion() throws Exception {
     when(mockService.getUsersByRegion(any(Region.class))).thenReturn(List.of());
 
-    mockMvcController.perform(MockMvcRequestBuilders.get(endpoint).param("region", "north_west"))
+    mockMvcController.perform(MockMvcRequestBuilders.get(END_POINT).param("region", "north_west"))
         .andExpect(MockMvcResultMatchers.status().isBadRequest());
   }
 
@@ -229,7 +212,7 @@ public class UserControllerTest {
     when(mockService.getUsersByRegionExclude(any(Region.class), anyString())).thenReturn(users);
 
     mockMvcController
-        .perform(MockMvcRequestBuilders.get(endpoint).param("region", "NORTH_WEST").param("exclude",
+        .perform(MockMvcRequestBuilders.get(END_POINT).param("region", "NORTH_WEST").param("exclude",
             "UID_3"))
         .andExpect(MockMvcResultMatchers.status().isOk())
         .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(4)));
@@ -240,7 +223,7 @@ public class UserControllerTest {
   void test_getRegion_invalidRegion_excludeString() throws Exception {
     when(mockService.getUsersByRegionExclude(any(Region.class), anyString())).thenReturn(List.of());
 
-    mockMvcController.perform(MockMvcRequestBuilders.get(endpoint).param("region", "north_west")
+    mockMvcController.perform(MockMvcRequestBuilders.get(END_POINT).param("region", "north_west")
         .param("exclude", "UID_3")).andExpect(MockMvcResultMatchers.status().isBadRequest());
   }
 
@@ -259,7 +242,7 @@ public class UserControllerTest {
     });
 
     mockMvcController
-        .perform(MockMvcRequestBuilders.post(endpoint + "/98765/books")
+        .perform(MockMvcRequestBuilders.post(END_POINT + "/98765/books")
             .contentType(MediaType.APPLICATION_JSON).content(isbn))
         .andExpect(MockMvcResultMatchers.status().isCreated())
         .andExpect(MockMvcResultMatchers.jsonPath("$.books", hasSize(1)))
@@ -275,7 +258,7 @@ public class UserControllerTest {
         .thenThrow(NoSuchElementException.class);
 
     mockMvcController
-        .perform(MockMvcRequestBuilders.post(endpoint + "/12345/books")
+        .perform(MockMvcRequestBuilders.post(END_POINT + "/12345/books")
             .contentType(MediaType.APPLICATION_JSON).content(isbn))
         .andExpect(MockMvcResultMatchers.status().isNotFound());
   }
@@ -286,7 +269,7 @@ public class UserControllerTest {
     String isbn = "{\"not-isbn\": \"1234567890\"}";
 
     mockMvcController
-        .perform(MockMvcRequestBuilders.post(endpoint + "/12345/books")
+        .perform(MockMvcRequestBuilders.post(END_POINT + "/12345/books")
             .contentType(MediaType.APPLICATION_JSON).content(isbn))
         .andExpect(MockMvcResultMatchers.status().isBadRequest());
   }
@@ -300,7 +283,7 @@ public class UserControllerTest {
         anyString());
 
     mockMvcController
-        .perform(MockMvcRequestBuilders.post(endpoint + "/98765/books")
+        .perform(MockMvcRequestBuilders.post(END_POINT + "/98765/books")
             .contentType(MediaType.APPLICATION_JSON).content(isbn))
         .andExpect(MockMvcResultMatchers.status().isConflict());
   }
@@ -310,7 +293,7 @@ public class UserControllerTest {
   void test_removeBookFromUser_validRequest() throws Exception {
     doNothing().when(mockService).removeBookFromUser(anyString(), anyString());
 
-    mockMvcController.perform(MockMvcRequestBuilders.delete(endpoint + "/12345/books/1234567890"))
+    mockMvcController.perform(MockMvcRequestBuilders.delete(END_POINT + "/12345/books/1234567890"))
         .andExpect(MockMvcResultMatchers.status().isNoContent());
   }
 
@@ -320,7 +303,7 @@ public class UserControllerTest {
     doThrow(NoSuchElementException.class).when(mockService).removeBookFromUser(anyString(),
         anyString());
 
-    mockMvcController.perform(MockMvcRequestBuilders.delete(endpoint + "/12345/books/1234567890"))
+    mockMvcController.perform(MockMvcRequestBuilders.delete(END_POINT + "/12345/books/1234567890"))
         .andExpect(MockMvcResultMatchers.status().isNotFound());
   }
 }
