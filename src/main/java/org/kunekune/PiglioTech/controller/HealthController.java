@@ -24,7 +24,7 @@ public class HealthController {
         return ResponseEntity.ok(healthStatus);
     }
 
-    @GetMapping("/ping")
+    @GetMapping("/api/v1/ping")
     public ResponseEntity<String> ping() {
         return ResponseEntity.ok("OK");
     }
