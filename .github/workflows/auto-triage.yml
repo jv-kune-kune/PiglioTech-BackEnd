@@ -82,11 +82,15 @@ jobs:
       - name: Auto-assign Issue Author
         if: ${{ github.event_name == 'issues' && github.event.action == 'opened' }}
         uses: technote-space/assign-author@v1
+        with:
+          github_token: ${{ secrets.PAT_SECRET }}
 
       # 6. Auto-assign PR Author
       - name: Auto-assign PR Author
         if: ${{ github.event_name == 'pull_request' && github.event.action == 'opened' }}
         uses: technote-space/assign-author@v1
+        with:
+          github_token: ${{ secrets.PAT_SECRET }}
 
   delayed-actions:
     if: ${{ github.event_name == 'issues' && github.event.action == 'opened' }}
