@@ -9,14 +9,12 @@ on:
     - cron: "0 23 * * *"
 
 jobs:
-  issues-actions:
-    if: github.event_name == 'issues' || github.event_name == 'schedule'
+  immediate-actions:
     runs-on: ubuntu-latest
     steps:
-      # 1. Set End Date when an issue is closed (from auto-add-end-date.yml  [oai_citation:0‡auto-add-end-date.yml](file-service://file-2zvE4rv1UQCcskXgpoyqFG))
+      # 1. Set End Date for closed issues
       - name: Set End Date (Issues Closed)
         if: ${{ github.event_name == 'issues' && github.event.action == 'closed' }}
-        continue-on-error: true
         uses: EndBug/project-fields@v2
         with:
           operation: set
@@ -25,18 +23,81 @@ jobs:
           project_url: "https://github.com/orgs/jv-kune-kune/projects/1"
           values: ${{ github.event.issue.closed_at }}
 
-      # 2. Delay for newly opened issues (from auto-add-estimate.yml  [oai_citation:1‡auto-add-estimate.yml](file-service://file-CfdH9ti4RFzbZV3i7USB4Q) and auto-add-start-date.yml  [oai_citation:2‡auto-add-start-date.yml](file-service://file-WAd8whHbNVzvE3cRxmFgYU))
-      - name: Delay for Newly Opened Issue
-        if: ${{ github.event_name == 'issues' && github.event.action == 'opened' }}
-        continue-on-error: true
+      # 2. Add Issue to Project
+      - name: Add Issue to Project
+        if: ${{ github.event_name == 'issues' && (github.event.action == 'opened' || github.event.action == 'reopened') }}
+        uses: actions/add-to-project@v1.0.2
+        with:
+          project-url: "https://github.com/orgs/jv-kune-kune/projects/1"
+          github-token: ${{ secrets.PAT_SECRET }}
+
+      # 3. Extract Title & Determine Issue/PR Type
+      - name: Extract Title & Determine Issue/PR Type
+        if: ${{ github.event_name == 'issues' || github.event_name == 'pull_request' }}
         run: |
-          echo "Delaying for 5 minutes..."
+          if [ "${{ github.event_name }}" = "issues" ]; then
+            title="${{ github.event.issue.title }}"
+          else
+            title="${{ github.event.pull_request.title }}"
+          fi
+          echo "Title: $title"
+          echo "title=$title" >> $GITHUB_ENV
+          lower_title=$(echo "$title" | tr '[:upper:]' '[:lower:]')
+          case "$lower_title" in
+            feat:*) echo "field=feature 🛠" >> $GITHUB_ENV ;;
+            fix:*)  echo "field=bug fix 🐛" >> $GITHUB_ENV ;;
+            docs:*) echo "field=documentation 📝" >> $GITHUB_ENV ;;
+            chore:*) echo "field=chore 🧹" >> $GITHUB_ENV ;;
+            test:*) echo "field=testing ✅" >> $GITHUB_ENV ;;
+            perf:*) echo "field=performance 🏎" >> $GITHUB_ENV ;;
+            style:*) echo "field=style 🎨" >> $GITHUB_ENV ;;
+            refactor:*) echo "field=refactor ♻️" >> $GITHUB_ENV ;;
+            ci:*)   echo "field=ci/cd ⚙️" >> $GITHUB_ENV ;;
+            build:*) echo "field=build 🏗️" >> $GITHUB_ENV ;;
+            revert:*) echo "field=revert 🔄" >> $GITHUB_ENV ;;
+            *)       echo "field=unknown" >> $GITHUB_ENV ;;
+          esac
+
+      # 4. Update Issue Type Field if needed (for issues only)
+      - name: Get Current Issue Type Field
+        if: ${{ github.event_name == 'issues' && (github.event.action == 'labeled' || github.event.action == 'edited' || github.event.action == 'reopened' || github.event.action == 'unlabeled') }}
+        id: get-issue-type
+        uses: EndBug/project-fields@v2
+        with:
+          operation: get
+          fields: "Issue Type"
+          github_token: ${{ secrets.PAT_SECRET }}
+          project_url: "https://github.com/orgs/jv-kune-kune/projects/1"
+      - name: Set Issue Type Field
+        if: ${{ github.event_name == 'issues' && (github.event.action == 'labeled' || github.event.action == 'edited' || github.event.action == 'reopened' || github.event.action == 'unlabeled') && (steps.get-issue-type.outputs.values == '') }}
+        uses: EndBug/project-fields@v2
+        with:
+          operation: set
+          fields: "Issue Type"
+          github_token: ${{ secrets.PAT_SECRET }}
+          project_url: "https://github.com/orgs/jv-kune-kune/projects/1"
+          values: ${{ env.field }}
+
+      # 5. Auto-assign Issue Author
+      - name: Auto-assign Issue Author
+        if: ${{ github.event_name == 'issues' && github.event.action == 'opened' }}
+        uses: technote-space/assign-author@v1
+
+      # 6. Auto-assign PR Author
+      - name: Auto-assign PR Author
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'opened' }}
+        uses: technote-space/assign-author@v1
+
+  delayed-actions:
+    if: ${{ github.event_name == 'issues' && github.event.action == 'opened' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for User Input
+        run: |
+          echo "Waiting 5 minutes to allow user to update fields..."
           sleep 300
 
-      # 3. Update Estimate Based on Size (from auto-add-estimate.yml  [oai_citation:3‡auto-add-estimate.yml](file-service://file-CfdH9ti4RFzbZV3i7USB4Q))
-      - name: Get Size and Estimate Fields
-        if: ${{ (github.event_name == 'issues' && (github.event.action == 'opened' || github.event.action == 'labeled' || github.event.action == 'edited' || github.event.action == 'reopened')) || github.event_name == 'schedule' }}
-        continue-on-error: true
+      - name: Get Size and Estimate Fields (Delayed)
         id: get-estimate-fields
         uses: EndBug/project-fields@v2
         with:
@@ -45,9 +106,7 @@ jobs:
           github_token: ${{ secrets.PAT_SECRET }}
           project_url: "https://github.com/orgs/jv-kune-kune/projects/1"
 
-      - name: Validate Estimate Fields
-        if: ${{ (github.event_name == 'issues' && (github.event.action == 'opened' || github.event.action == 'labeled' || github.event.action == 'edited' || github.event.action == 'reopened')) || github.event_name == 'schedule' }}
-        continue-on-error: true
+      - name: Validate Estimate Fields (Delayed)
         id: validate-estimate
         run: |
           echo "Retrieved fields: ${{ steps.get-estimate-fields.outputs.values }}"
@@ -56,9 +115,7 @@ jobs:
             exit 0
           fi
 
-      - name: Determine and Export Estimate Value
-        if: ${{ (github.event_name == 'issues' && (github.event.action == 'opened' || github.event.action == 'labeled' || github.event.action == 'edited' || github.event.action == 'reopened')) || github.event_name == 'schedule' }}
-        continue-on-error: true
+      - name: Determine and Export Estimate Value (Delayed)
         id: determine-estimate
         run: |
           size=$(echo "${{ steps.get-estimate-fields.outputs.values }}" | cut -d',' -f1)
@@ -85,9 +142,8 @@ jobs:
           fi
           echo "value=$value" >> $GITHUB_ENV
 
-      - name: Set Estimate Field
-        if: ${{ (env.value != '' && env.value != 'Unknown') && ((github.event_name == 'issues' && (github.event.action == 'opened' || github.event.action == 'labeled' || github.event.action == 'edited' || github.event.action == 'reopened')) || github.event_name == 'schedule') }}
-        continue-on-error: true
+      - name: Set Estimate Field (Delayed)
+        if: ${{ env.value != '' && env.value != 'Unknown' }}
         uses: EndBug/project-fields@v2
         with:
           operation: set
@@ -96,91 +152,21 @@ jobs:
           project_url: "https://github.com/orgs/jv-kune-kune/projects/1"
           values: ${{ env.value }}
 
-      # 4. Assign Issue Type Based on Title (from auto-add-issue-type.yml  [oai_citation:4‡auto-add-issue-type.yml](file-service://file-HJkKmHkNsbW3Y5yrJHKf2Z))
-      - name: Extract Title and Determine Issue Type
-        if: ${{ github.event_name == 'issues' && (github.event.action == 'labeled' || github.event.action == 'unlabeled' || github.event.action == 'edited' || github.event.action == 'reopened') }}
-        continue-on-error: true
-        id: assign-issue-type
-        run: |
-          title="${{ github.event.issue.title }}"
-          echo "Title: $title"
-          echo "title=$title" >> $GITHUB_ENV
-          lower_title=$(echo "$title" | tr '[:upper:]' '[:lower:]')
-          case "$lower_title" in
-            feat:*) echo "field=feature 🛠" >> $GITHUB_ENV ;;
-            fix:*)  echo "field=bug fix 🐛" >> $GITHUB_ENV ;;
-            docs:*) echo "field=documentation 📝" >> $GITHUB_ENV ;;
-            chore:*) echo "field=chore 🧹" >> $GITHUB_ENV ;;
-            test:*) echo "field=testing ✅" >> $GITHUB_ENV ;;
-            perf:*) echo "field=performance 🏎" >> $GITHUB_ENV ;;
-            style:*) echo "field=style 🎨" >> $GITHUB_ENV ;;
-            refactor:*) echo "field=refactor ♻️" >> $GITHUB_ENV ;;
-            ci:*)   echo "field=ci/cd ⚙️" >> $GITHUB_ENV ;;
-            build:*) echo "field=build 🏗️" >> $GITHUB_ENV ;;
-            revert:*) echo "field=revert 🔄" >> $GITHUB_ENV ;;
-            *)       echo "field=unknown" >> $GITHUB_ENV ;;
-          esac
-
-      - name: Get Current Issue Type Field
-        if: ${{ github.event_name == 'issues' && (github.event.action == 'labeled' || github.event.action == 'unlabeled' || github.event.action == 'edited' || github.event.action == 'reopened') }}
-        continue-on-error: true
-        id: get-issue-type
+      - name: Get Status and Start Date Fields (Delayed)
+        id: get-start-date-fields
         uses: EndBug/project-fields@v2
         with:
           operation: get
-          fields: "Issue Type"
+          fields: "Status,Start date"
           github_token: ${{ secrets.PAT_SECRET }}
           project_url: "https://github.com/orgs/jv-kune-kune/projects/1"
 
-      - name: Update Issue Type Field If Needed
-        if: ${{ github.event_name == 'issues' && (github.event.action == 'labeled' || github.event.action == 'unlabeled' || github.event.action == 'edited' || github.event.action == 'reopened') && (steps.get-issue-type.outputs.values == '') }}
-        continue-on-error: true
-        uses: EndBug/project-fields@v2
-        with:
-          operation: set
-          fields: "Issue Type"
-          github_token: ${{ secrets.PAT_SECRET }}
-          project_url: "https://github.com/orgs/jv-kune-kune/projects/1"
-          values: ${{ env.field }}
-
-      - name: Log Issue Type Update or Conflict
-        if: ${{ github.event_name == 'issues' && (github.event.action == 'labeled' || github.event.action == 'unlabeled' || github.event.action == 'edited' || github.event.action == 'reopened') }}
-        continue-on-error: true
+      - name: Check and Set Start Date for In Progress (Delayed)
         run: |
-          if [ "${{ steps.get-issue-type.outputs.values }}" == "" ]; then
-            echo "::notice title=Field Updated::Issue Type set to '${{ env.field }}'."
-          elif [ "${{ steps.get-issue-type.outputs.values }}" != "${{ env.field }}" ]; then
-            echo "::warning title=Field Conflict::Current Issue Type '${{ steps.get-issue-type.outputs.values }}' does not match title-derived '${{ env.field }}'."
-          fi
-
-      # 5. Add Issue to Project (from auto-add-project.yml  [oai_citation:5‡auto-add-project.yml](file-service://file-NbRE3V1HZiFeeqqR98VywC))
-      - name: Add Issue to Project
-        if: ${{ github.event_name == 'issues' && (github.event.action == 'opened' || github.event.action == 'reopened') }}
-        continue-on-error: true
-        uses: actions/add-to-project@v1.0.2
-        with:
-          project-url: "https://github.com/orgs/jv-kune-kune/projects/1"
-          github-token: ${{ secrets.PAT_SECRET }}
-
-      - name: Set Resource URL for Issue
-        if: ${{ github.event_name == 'issues' && (github.event.action == 'opened' || github.event.action == 'reopened') }}
-        continue-on-error: true
-        id: set-resource-url
-        run: echo "::set-output name=resource_url::${{ github.event.issue.html_url }}"
-
-      # 6. Add Start Date when status is "In progress" (from auto-add-start-date.yml  [oai_citation:6‡auto-add-start-date.yml](file-service://file-WAd8whHbNVzvE3cRxmFgYU))
-      - name: Add Start Date for In Progress Issues
-        if: ${{ (github.event_name == 'issues' && (github.event.action == 'opened' || github.event.action == 'labeled' || github.event.action == 'edited' || github.event.action == 'reopened')) || github.event_name == 'schedule' }}
-        continue-on-error: true
-        id: add-start-date
-        run: |
-          echo "Fetching Status and Start Date fields..."
-          # Retrieve the Status and Start date fields using the project-fields action
-          # (This is a simplified version; adjust according to your environment.)
-          fields_output="${{ steps.get-estimate-fields.outputs.values }}"
-          status=$(echo "$fields_output" | cut -d',' -f1)
-          start_date=$(echo "$fields_output" | cut -d',' -f2)
-          echo "Status: $status, Start Date: $start_date"
+          status=$(echo "${{ steps.get-start-date-fields.outputs.values }}" | cut -d',' -f1)
+          start_date=$(echo "${{ steps.get-start-date-fields.outputs.values }}" | cut -d',' -f2)
+          echo "Status: $status"
+          echo "Start Date: $start_date"
           if [[ "$status" == "In progress" && -z "$start_date" ]]; then
             today=$(date +%Y-%m-%d)
             echo "Setting Start Date to $today."
@@ -189,9 +175,8 @@ jobs:
             echo "No Start Date update needed."
           fi
 
-      - name: Set Start Date Field
-        if: ${{ env.start_date && ((github.event_name == 'issues' && (github.event.action == 'opened' || github.event.action == 'labeled' || github.event.action == 'edited' || github.event.action == 'reopened')) || github.event_name == 'schedule') }}
-        continue-on-error: true
+      - name: Set Start Date Field (Delayed)
+        if: ${{ env.start_date }}
         uses: EndBug/project-fields@v2
         with:
           operation: set
@@ -199,100 +184,3 @@ jobs:
           github_token: ${{ secrets.PAT_SECRET }}
           project_url: "https://github.com/orgs/jv-kune-kune/projects/1"
           values: ${{ env.start_date }}
-
-      # 7. Add Team Label (from auto-add-team-label.yml  [oai_citation:7‡auto-add-team-label.yml](file-service://file-5d7j66f1N8aQ4u1HpLeEby))
-      - name: Add Project Management Label
-        if: ${{ github.event_name == 'issues' && github.event.action == 'opened' }}
-        continue-on-error: true
-        uses: actions-ecosystem/action-add-labels@v1
-        with:
-          github_token: ${{ secrets.PAT_SECRET }}
-          labels: "👥 project management 📋"
-
-      # 8. Auto-assign Issue Author (from auto-assign-issue-author.yml  [oai_citation:8‡auto-assign-issue-author.yml](file-service://file-VbUf7546sYcvitTNBE6M7C))
-      - name: Auto-assign Issue Author
-        if: ${{ github.event_name == 'issues' && github.event.action == 'opened' }}
-        continue-on-error: true
-        uses: technote-space/assign-author@v1
-
-  pr-actions:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      # 1. Assign Issue Type for PRs (from auto-add-issue-type.yml  [oai_citation:9‡auto-add-issue-type.yml](file-service://file-HJkKmHkNsbW3Y5yrJHKf2Z))
-      - name: Extract Title and Determine PR Type
-        if: ${{ github.event_name == 'pull_request' && (github.event.action == 'labeled' || github.event.action == 'unlabeled' || github.event.action == 'edited' || github.event.action == 'reopened') }}
-        continue-on-error: true
-        id: assign-pr-type
-        run: |
-          title="${{ github.event.pull_request.title }}"
-          echo "Title: $title"
-          echo "title=$title" >> $GITHUB_ENV
-          lower_title=$(echo "$title" | tr '[:upper:]' '[:lower:]')
-          case "$lower_title" in
-            feat:*) echo "field=feature 🛠" >> $GITHUB_ENV ;;
-            fix:*)  echo "field=bug fix 🐛" >> $GITHUB_ENV ;;
-            docs:*) echo "field=documentation 📝" >> $GITHUB_ENV ;;
-            chore:*) echo "field=chore 🧹" >> $GITHUB_ENV ;;
-            test:*) echo "field=testing ✅" >> $GITHUB_ENV ;;
-            perf:*) echo "field=performance 🏎" >> $GITHUB_ENV ;;
-            style:*) echo "field=style 🎨" >> $GITHUB_ENV ;;
-            refactor:*) echo "field=refactor ♻️" >> $GITHUB_ENV ;;
-            ci:*)   echo "field=ci/cd ⚙️" >> $GITHUB_ENV ;;
-            build:*) echo "field=build 🏗️" >> $GITHUB_ENV ;;
-            revert:*) echo "field=revert 🔄" >> $GITHUB_ENV ;;
-            *)       echo "field=unknown" >> $GITHUB_ENV ;;
-          esac
-
-      - name: Get Current PR Issue Type Field
-        if: ${{ github.event_name == 'pull_request' && (github.event.action == 'labeled' || github.event.action == 'unlabeled' || github.event.action == 'edited' || github.event.action == 'reopened') }}
-        continue-on-error: true
-        id: get-pr-issue-type
-        uses: EndBug/project-fields@v2
-        with:
-          operation: get
-          fields: "Issue Type"
-          github_token: ${{ secrets.PAT_SECRET }}
-          project_url: "https://github.com/orgs/jv-kune-kune/projects/1"
-
-      - name: Update PR Issue Type Field If Needed
-        if: ${{ github.event_name == 'pull_request' && (github.event.action == 'labeled' || github.event.action == 'unlabeled' || github.event.action == 'edited' || github.event.action == 'reopened') && (steps.get-pr-issue-type.outputs.values == '') }}
-        continue-on-error: true
-        uses: EndBug/project-fields@v2
-        with:
-          operation: set
-          fields: "Issue Type"
-          github_token: ${{ secrets.PAT_SECRET }}
-          project_url: "https://github.com/orgs/jv-kune-kune/projects/1"
-          values: ${{ env.field }}
-
-      - name: Log PR Issue Type Update or Conflict
-        if: ${{ github.event_name == 'pull_request' && (github.event.action == 'labeled' || github.event.action == 'unlabeled' || github.event.action == 'edited' || github.event.action == 'reopened') }}
-        continue-on-error: true
-        run: |
-          if [ "${{ steps.get-pr-issue-type.outputs.values }}" == "" ]; then
-            echo "::notice title=Field Updated::PR Issue Type set to '${{ env.field }}'."
-          elif [ "${{ steps.get-pr-issue-type.outputs.values }}" != "${{ env.field }}" ]; then
-            echo "::warning title=Field Conflict::Current PR Issue Type '${{ steps.get-pr-issue-type.outputs.values }}' differs from title-derived '${{ env.field }}'."
-          fi
-
-      # 2. Add PR to Project (from auto-add-project.yml  [oai_citation:10‡auto-add-project.yml](file-service://file-NbRE3V1HZiFeeqqR98VywC))
-      - name: Add PR to Project
-        if: ${{ github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'ready_for_review') }}
-        continue-on-error: true
-        uses: actions/add-to-project@v1.0.2
-        with:
-          project-url: "https://github.com/orgs/jv-kune-kune/projects/1"
-          github-token: ${{ secrets.PAT_SECRET }}
-
-      - name: Set Resource URL for PR
-        if: ${{ github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'ready_for_review') }}
-        continue-on-error: true
-        id: set-resource-url-pr
-        run: echo "::set-output name=resource_url::${{ github.event.pull_request.html_url }}"
-
-      # 3. Auto-assign PR Author (from auto-assign-pull-request-author.yml  [oai_citation:11‡auto-assign-pull-request-author.yml](file-service://file-2KvaGjBpUKqew7PyQqMunD))
-      - name: Auto-assign PR Author
-        if: ${{ github.event_name == 'pull_request' && github.event.action == 'opened' }}
-        continue-on-error: true
-        uses: technote-space/assign-author@v1
